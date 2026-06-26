@@ -8,11 +8,11 @@ A Next.js 14 web app that monitors online marketplaces for Dragon Ball Z TCG sea
 
 ## Features
 
-- 🔍 **Multi-source scraping** — TCGPlayer, eBay, Troll and Toad
-- 📊 **Inventory dashboard** — filterable grid with live stock status
-- ⏱️ **30-minute cron jobs** — powered by Vercel Cron
-- 🔔 **Webhook alerts** — new listings and price drops
-- 🗄️ **Neon database** — serverless PostgreSQL with full listing history
+- ð **Multi-source scraping** â TCGPlayer, eBay, Troll and Toad
+- ð **Inventory dashboard** â filterable grid with live stock status
+- â±ï¸ **30-minute cron jobs** â powered by Vercel Cron
+- ð **Webhook alerts** â new listings and price drops
+- ðï¸ **Neon database** â serverless PostgreSQL with full listing history
 
 ## Tech Stack
 
@@ -22,6 +22,10 @@ A Next.js 14 web app that monitors online marketplaces for Dragon Ball Z TCG sea
 - **Deployment**: Vercel
 
 ## Getting Started
+
+```
+DATABASE_URL=postgresql://[user]:[password]@ep-little-dew-ahaozzyc-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require
+```
 
 ### 1. Clone & Install
 
@@ -54,7 +58,7 @@ npm run dev
 
 1. Push to GitHub
 2. Import the repo in Vercel
-3. Add `DATABASE_URL` and `CRON_SECRET` in the Vercel dashboard → Settings → Environment Variables
+3. Add `DATABASE_URL` and `CRON_SECRET` in the Vercel dashboard â Settings â Environment Variables
 4. Vercel Cron will automatically run `/api/cron/scan` every 30 minutes
 
 ## API Routes
@@ -69,8 +73,8 @@ npm run dev
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | ✅ | Neon PostgreSQL connection string |
-| `CRON_SECRET` | ✅ | Random secret to secure cron endpoint |
+| `DATABASE_URL` | â | Neon PostgreSQL connection string |
+| `CRON_SECRET` | â | Random secret to secure cron endpoint |
 | `ALERT_WEBHOOK_URL` | Optional | Slack/Discord webhook for alerts |
 | `EBAY_APP_ID` | Optional | eBay Finding API App ID |
 | `TCGPLAYER_PUBLIC_KEY` | Optional | TCGPlayer API public key |
