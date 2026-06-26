@@ -12,13 +12,13 @@ A Next.js 14 web app that monitors online marketplaces for Dragon Ball Z TCG sea
 - 📊 **Inventory dashboard** — filterable grid with live stock status
 - ⏱️ **30-minute cron jobs** — powered by Vercel Cron
 - 🔔 **Webhook alerts** — new listings and price drops
-- 🗄️ **Supabase backend** — PostgreSQL with full listing history
+- 🗄️ **Neon database** — serverless PostgreSQL with full listing history
 
 ## Tech Stack
 
 - **Frontend**: Next.js 14 App Router, TypeScript, Tailwind CSS
 - **Backend**: Next.js API Routes
-- **Database**: Supabase (PostgreSQL)
+- **Database**: Neon (serverless PostgreSQL)
 - **Deployment**: Vercel
 
 ## Getting Started
@@ -31,17 +31,17 @@ cd dbz-tcg-finder
 npm install
 ```
 
-### 2. Set Up Supabase
+### 2. Set Up Neon
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. Run `supabase/migrations/001_initial.sql` in your Supabase SQL editor
-3. Copy your project URL and anon key
+1. Go to [console.neon.tech](https://console.neon.tech) and open your project
+2. Click **Connection string** on the dashboard and copy the pooler URL
+3. Run `supabase/migrations/001_initial.sql` in the Neon **SQL Editor** (the SQL is standard PostgreSQL and works without modification)
 
 ### 3. Environment Variables
 
 ```bash
 cp .env.example .env.local
-# Fill in your values
+# Set DATABASE_URL to your Neon connection string
 ```
 
 ### 4. Run Locally
@@ -54,7 +54,7 @@ npm run dev
 
 1. Push to GitHub
 2. Import the repo in Vercel
-3. Add environment variables in the Vercel dashboard
+3. Add `DATABASE_URL` and `CRON_SECRET` in the Vercel dashboard → Settings → Environment Variables
 4. Vercel Cron will automatically run `/api/cron/scan` every 30 minutes
 
 ## API Routes
@@ -69,11 +69,12 @@ npm run dev
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Your Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Your Supabase anon key |
+| `DATABASE_URL` | ✅ | Neon PostgreSQL connection string |
 | `CRON_SECRET` | ✅ | Random secret to secure cron endpoint |
 | `ALERT_WEBHOOK_URL` | Optional | Slack/Discord webhook for alerts |
 | `EBAY_APP_ID` | Optional | eBay Finding API App ID |
+| `TCGPLAYER_PUBLIC_KEY` | Optional | TCGPlayer API public key |
+| `TCGPLAYER_PRIVATE_KEY` | Optional | TCGPlayer API private key |
 
 ## Sources
 
