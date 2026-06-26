@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase'
+import { sql } from '@/lib/db'
 import { runAllScrapers } from '@/lib/scrapers'
 
 export const maxDuration = 60
@@ -12,16 +12,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = createServerClient()
-
   // Create a scan_run record to track this job
-  const { data: scanRun, error: scanError } = await supabase
-    .from('scan_runs')
-    .insert({ status: 'running', sources_scanned: [] })
-    .select()
-    .single()
-
-  if (scanError || !scanRun) {
+  let scanRunId: number
+  try {
+    const [scanRun] = await sql`
+      INSERT INTO scan_runs (status, sources_scanned)
+      VALUES ('running', ARRAY[]::text[])
+      RETURNING id
+    `
+    scanRunId = scanRun.id
+  } catch {
     return NextResponse.json({ error: 'Failed to create scan run' }, { status: 500 })
   }
 
@@ -35,54 +35,88 @@ export async function GET(request: NextRequest) {
 
     for (const listing of listings) {
       // Check if this listing already exists
-      const { data: existing } = await supabase
-        .from('listings')
-        .select('id, price')
-        .eq('source', listing.source)
-        .eq('external_id', listing.external_id)
-        .maybeSingle()
+      const existing = await sql`
+        SELECT id, price FROM listings
+        WHERE source = ${listing.source} AND external_id = ${listing.external_id}
+        LIMIT 1
+      `
 
-      if (!existing) {
+      if (existing.length === 0) {
         // Brand new listing
-        const { error: insertError } = await supabase.from('listings').insert({
-          ...listing,
-          first_seen_at: new Date().toISOString(),
-          last_seen_at: new Date().toISOString(),
-          is_active: true,
-        })
-        if (insertError) {
-          errors.push(`Insert failed for ${listing.external_id}: ${insertError.message}`)
-        } else {
+        try {
+          await sql`
+            INSERT INTO listings (
+              source, external_id, title, url, price, in_stock,
+              quantity_available, product_type, image_url,
+              first_seen_at, last_seen_at, is_active
+            ) VALUES (
+              ${listing.source},
+              ${listing.external_id},
+              ${listing.title ?? null},
+              ${listing.url ?? null},
+              ${listing.price ?? null},
+              ${listing.in_stock},
+              ${listing.quantity_available ?? null},
+              ${listing.product_type ?? null},
+              ${listing.image_url ?? null},
+              NOW(), NOW(), true
+            )
+          `
           newListingsFound++
+        } catch (e) {
+          errors.push(`Insert failed for ${listing.external_id}: ${e instanceof Error ? e.message : String(e)}`)
         }
       } else {
-        // Update existing listing
-        const updates: Record<string, unknown> = {
-          last_seen_at: new Date().toISOString(),
-          in_stock: listing.in_stock,
-          quantity_available: listing.quantity_available ?? null,
-          updated_at: new Date().toISOString(),
-        }
-
-        if (
+        const row = existing[0]
+        const priceChanged =
           listing.price !== undefined &&
-          existing.price !== null &&
-          existing.price !== listing.price
-        ) {
-          updates.previous_price = existing.price
-          updates.price = listing.price
-          updates.last_price_change_at = new Date().toISOString()
-          priceChangesFound++
-        } else if (listing.price !== undefined) {
-          updates.price = listing.price
-        }
+          row.price !== null &&
+          row.price !== listing.price
 
-        const { error: updateError } = await supabase
-          .from('listings')
-          .update(updates)
-          .eq('id', existing.id)
-        if (updateError) {
-          errors.push(`Update failed for ${existing.id}: ${updateError.message}`)
+        if (priceChanged) {
+          priceChangesFound++
+          try {
+            await sql`
+              UPDATE listings SET
+                last_seen_at = NOW(),
+                in_stock = ${listing.in_stock},
+                quantity_available = ${listing.quantity_available ?? null},
+                updated_at = NOW(),
+                previous_price = ${row.price},
+                price = ${listing.price},
+                last_price_change_at = NOW()
+              WHERE id = ${row.id}
+            `
+          } catch (e) {
+            errors.push(`Update failed for ${row.id}: ${e instanceof Error ? e.message : String(e)}`)
+          }
+        } else if (listing.price !== undefined) {
+          try {
+            await sql`
+              UPDATE listings SET
+                last_seen_at = NOW(),
+                in_stock = ${listing.in_stock},
+                quantity_available = ${listing.quantity_available ?? null},
+                updated_at = NOW(),
+                price = ${listing.price}
+              WHERE id = ${row.id}
+            `
+          } catch (e) {
+            errors.push(`Update failed for ${row.id}: ${e instanceof Error ? e.message : String(e)}`)
+          }
+        } else {
+          try {
+            await sql`
+              UPDATE listings SET
+                last_seen_at = NOW(),
+                in_stock = ${listing.in_stock},
+                quantity_available = ${listing.quantity_available ?? null},
+                updated_at = NOW()
+              WHERE id = ${row.id}
+            `
+          } catch (e) {
+            errors.push(`Update failed for ${row.id}: ${e instanceof Error ? e.message : String(e)}`)
+          }
         }
       }
     }
@@ -106,17 +140,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Mark scan run complete
-    await supabase
-      .from('scan_runs')
-      .update({
-        completed_at: new Date().toISOString(),
-        sources_scanned: sources,
-        new_listings_found: newListingsFound,
-        price_changes_found: priceChangesFound,
-        errors,
-        status: 'completed',
-      })
-      .eq('id', scanRun.id)
+    await sql`
+      UPDATE scan_runs SET
+        completed_at = NOW(),
+        sources_scanned = ${sources}::text[],
+        new_listings_found = ${newListingsFound},
+        price_changes_found = ${priceChangesFound},
+        errors = ${errors}::text[],
+        status = 'completed'
+      WHERE id = ${scanRunId}
+    `
 
     return NextResponse.json({
       status: 'completed',
@@ -128,14 +161,13 @@ export async function GET(request: NextRequest) {
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    await supabase
-      .from('scan_runs')
-      .update({
-        completed_at: new Date().toISOString(),
-        errors: [message],
-        status: 'failed',
-      })
-      .eq('id', scanRun.id)
+    await sql`
+      UPDATE scan_runs SET
+        completed_at = NOW(),
+        errors = ${[message]}::text[],
+        status = 'failed'
+      WHERE id = ${scanRunId}
+    `
     return NextResponse.json({ error: message, status: 'failed' }, { status: 500 })
   }
 }
