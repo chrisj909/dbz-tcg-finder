@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase'
+import { sql } from '@/lib/db'
 import { Listing } from '@/lib/types'
 import InventoryCard from '@/components/InventoryCard'
 import StatsBar from '@/components/StatsBar'
@@ -6,48 +6,42 @@ import StatsBar from '@/components/StatsBar'
 export const revalidate = 300 // revalidate every 5 minutes
 
 async function getListings(source?: string, productType?: string): Promise<Listing[]> {
-  const supabase = createServerClient()
-  let query = supabase
-    .from('listings')
-    .select('*')
-    .eq('is_active', true)
-    .order('first_seen_at', { ascending: false })
-    .limit(50)
-
-  if (source) query = query.eq('source', source)
-  if (productType) query = query.eq('product_type', productType)
-
-  const { data, error } = await query
-  if (error) {
+  try {
+    const listings = await sql`
+      SELECT * FROM listings
+      WHERE is_active = true
+        AND (${source ?? null}::text IS NULL OR source = ${source ?? null})
+        AND (${productType ?? null}::text IS NULL OR product_type = ${productType ?? null})
+      ORDER BY first_seen_at DESC
+      LIMIT 50
+    `
+    return listings as Listing[]
+  } catch (error) {
     console.error('Error fetching listings:', error)
     return []
   }
-  return (data as Listing[]) ?? []
 }
 
 async function getStats() {
-  const supabase = createServerClient()
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const todayISO = today.toISOString()
 
-  const [{ count: total }, { count: newToday }, { count: priceDrops }] = await Promise.all([
-    supabase
-      .from('listings')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true)
-      .eq('in_stock', true),
-    supabase
-      .from('listings')
-      .select('*', { count: 'exact', head: true })
-      .gte('first_seen_at', today.toISOString()),
-    supabase
-      .from('listings')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_price_change_at', today.toISOString())
-      .not('last_price_change_at', 'is', null),
-  ])
-
-  return { total: total ?? 0, newToday: newToday ?? 0, priceDrops: priceDrops ?? 0 }
+  try {
+    const [totalResult, newTodayResult, priceDropsResult] = await Promise.all([
+      sql`SELECT COUNT(*) AS count FROM listings WHERE is_active = true AND in_stock = true`,
+      sql`SELECT COUNT(*) AS count FROM listings WHERE first_seen_at >= ${todayISO}`,
+      sql`SELECT COUNT(*) AS count FROM listings WHERE last_price_change_at >= ${todayISO} AND last_price_change_at IS NOT NULL`,
+    ])
+    return {
+      total: Number(totalResult[0].count),
+      newToday: Number(newTodayResult[0].count),
+      priceDrops: Number(priceDropsResult[0].count),
+    }
+  } catch (error) {
+    console.error('Error fetching stats:', error)
+    return { total: 0, newToday: 0, priceDrops: 0 }
+  }
 }
 
 export default async function HomePage({
