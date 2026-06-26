@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase'
+import { sql } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -9,28 +9,34 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 100)
   const offset = parseInt(searchParams.get('offset') ?? '0')
 
-  const supabase = createServerClient()
-  let query = supabase
-    .from('listings')
-    .select('*', { count: 'exact' })
-    .eq('is_active', true)
-    .order('first_seen_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+  try {
+    const listings = await sql`
+      SELECT * FROM listings
+      WHERE is_active = true
+        AND (${source}::text IS NULL OR source = ${source})
+        AND (${productType}::text IS NULL OR product_type = ${productType})
+        AND (${inStock === 'true' ? 'true' : null}::boolean IS NULL OR in_stock = true)
+      ORDER BY first_seen_at DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `
 
-  if (source) query = query.eq('source', source)
-  if (productType) query = query.eq('product_type', productType)
-  if (inStock === 'true') query = query.eq('in_stock', true)
+    const [{ count }] = await sql`
+      SELECT COUNT(*) AS count FROM listings
+      WHERE is_active = true
+        AND (${source}::text IS NULL OR source = ${source})
+        AND (${productType}::text IS NULL OR product_type = ${productType})
+        AND (${inStock === 'true' ? 'true' : null}::boolean IS NULL OR in_stock = true)
+    `
 
-  const { data, error, count } = await query
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({
+      listings,
+      total: Number(count),
+      limit,
+      offset,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  return NextResponse.json({
-    listings: data,
-    total: count,
-    limit,
-    offset,
-  })
 }
