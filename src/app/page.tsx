@@ -3,7 +3,8 @@ import { Listing } from '@/lib/types'
 import InventoryCard from '@/components/InventoryCard'
 import StatsBar from '@/components/StatsBar'
 
-export const revalidate = 300 // revalidate every 5 minutes
+// Always reflect the latest scan — a live finder shouldn't serve 5-min-stale data.
+export const dynamic = 'force-dynamic'
 
 async function getListings(source?: string, productType?: string): Promise<Listing[]> {
   try {
