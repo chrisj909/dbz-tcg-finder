@@ -1,0 +1,14 @@
+{
+  "name": "dbz-scanner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local scanner for dbz-tcg-finder. Runs marketplace sources (browser + API) and writes listings to the Neon DB. Runs on Chris's PC; not deployed.",
+  "scripts": {
+    "scan": "node run.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "playwright": "^1.49.1"
+  }
+}
