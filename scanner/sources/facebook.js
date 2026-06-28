@@ -27,7 +27,7 @@ const UA =
 const SEALED_RE = /sealed|booster box|booster case|display box|booster display|\bcase\b|\bbox\b|\blot\b|\btcg\b|\bccg\b/i
 // ...and drop singles/merch.
 const EXCLUDE_RE =
-  /\bsingles?\b|playmat|sleeves?|\bproxy\b|\bfigure\b|plush|funko|poster|sticker|shirt|hoodie|wall scroll|\bdvd\b|blu-?ray|keychain|backpack|\bbulk\b/i
+  /\bsingles?\b|playmat|sleeves?|\bproxy\b|\bfigure\b|plush|funko|poster|sticker|shirt|hoodie|wall scroll|\bdvd\b|blu-?ray|keychain|backpack|\bbulk\b|acrylic|\bstand\b|\bscr\b|secret rare|super rare|\b[a-z]{2,4}\d{1,2}-\d{1,3}\b/i
 
 const isLocationLine = (l) => /^[A-Za-z .'-]+,\s*[A-Z]{2}$/.test(l)
 // FB injects badge lines ("Partner listing", "Sponsored") into card text — ignore them.
