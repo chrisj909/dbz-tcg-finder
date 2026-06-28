@@ -16,13 +16,22 @@ const AREA = 'bham' // Birmingham, Alabama
 const QUERIES = [
   'dragon ball z',
   'dragon ball super',
-  'dbz',
+  'dbz booster box', // specific — the bare `dbz` query matched DBZ-brand guitars (#20)
+  'dbz cards',
   'dragon ball sealed',
   'dragon ball booster box',
 ]
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
+
+// Relevance (#20). "DBZ" is also a guitar brand (Dean/Diamond), so the bare
+// `dbz` query dragged in guitars/amps/basses. Fix: (1) the dbz queries above are
+// now specific, and (2) we drop any musical-instrument hit as a safety net.
+// We deliberately do NOT gate on a positive title match — Craigslist matches the
+// query against the post BODY too, so a real DBZ post can have a generic title.
+const INSTRUMENT_RE =
+  /\bguitars?\b|\bamps?\b|amplifier|\bbass\b|\bpedals?\b|fender|squier|stratocaster|telecaster|humbucker|fretboard|\bfrets?\b|\bstrings?\b|ukulele|mandolin|\bpickups?\b/i
 
 export async function scrapeCraigslist({ headless = true } = {}) {
   const browser = await chromium.launch({ headless })
@@ -65,9 +74,10 @@ export async function scrapeCraigslist({ headless = true } = {}) {
 
         for (const it of items) {
           if (!it.pid || seen.has(it.pid)) continue
+          const title = it.title || 'Craigslist listing'
+          if (INSTRUMENT_RE.test(title)) continue // #20: drop DBZ-guitar/instrument false positives
           seen.add(it.pid)
           const { location } = parseCraigslistMeta(it.meta)
-          const title = it.title || 'Craigslist listing'
           listings.push({
             source: 'craigslist',
             external_id: it.pid,
