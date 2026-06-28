@@ -3,6 +3,7 @@
 import { scrapeCraigslist } from './craigslist.js'
 import { scrapeEbay } from './ebay.js'
 import { scrapeFacebook } from './facebook.js'
+import { scrapeLocalShops } from './local-shops.js'
 import { scrapeTcgplayer } from './tcgplayer.js'
 import { scrapeTrollAndToad } from './trollandtoad.js'
 
@@ -37,5 +38,11 @@ export const sources = {
     browser: true,
     needsLogin: false,
     run: scrapeTrollAndToad,
+  },
+  local_shops: {
+    label: 'Birmingham local shops (Gear Gaming, Card Addicts, Iron City Games)',
+    browser: true,
+    needsLogin: false,
+    run: scrapeLocalShops,
   },
 }
