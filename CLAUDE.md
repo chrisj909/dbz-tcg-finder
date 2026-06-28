@@ -22,11 +22,14 @@ A multi-user web app that continually hunts **Dragon Ball Z sealed product (all 
 
 ```bash
 npm run dev            # web app at http://localhost:3000
-npm run build          # production build (CI/green-gate)
+npm run build          # production build (green-gate)
 npm run lint           # eslint
-node scanner/run.js --source=ebay     # run one source (after scanner build)
-node scanner/run.js                    # run all sources
+node --env-file=.env.local scripts/migrate.mjs              # apply DB migrations
+node --env-file=.env.local scanner/run.js [--source=ebay]   # scan sources -> listings
+node --env-file=.env.local scanner/market.js                # eBay SOLD -> market_values
+node scanner/login.js facebook                              # one-time FB/OfferUp session (run in YOUR terminal)
 ```
+Dependencies + setup: `docs/DEPENDENCIES.md`.
 
 ## Hard rules (NEVER violate)
 

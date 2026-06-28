@@ -2,6 +2,21 @@
 
 Documentation for each data source: URL, scraping method, API registration, and compliance notes.
 
+## Current status (2026-06-27)
+
+All marketplaces 403 plain HTTP, so every source runs in the **local scanner** (`scanner/sources/*.js`) via headless Chromium on the residential IP. Run: `node --env-file=.env.local scanner/run.js [--source=<name>]`.
+
+| Source | Status | Notes |
+|--------|--------|-------|
+| **eBay** (search) | ✅ live | `scanner/sources/ebay.js` — sealed-filtered, ~230 listings; images via scroll + currentSrc |
+| **eBay SOLD** (market value) | ✅ live | `scanner/market.js` → `market_values` resale benchmarks |
+| **Craigslist** | ✅ live | `bham`.craigslist.org (NOT `birmingham.*` = UK) |
+| **Facebook Marketplace** | ✅ live | Birmingham; needs PERSONAL FB profile + saved session (`scanner/login.js facebook`); FB image URLs expire (#35) |
+| **OfferUp** | ⏳ planned | Playwright + login (#7) |
+| **Mercari / TCGPlayer / Troll&Toad / local shops** | ⏳ planned | #27 / #28 / #18 / #10 |
+
+The legacy `src/lib/scrapers/*` (TCGPlayer stub, dead eBay Finding API, 404 Troll&Toad) are superseded by the scanner; the Vercel cron that still runs them is dead weight (#30).
+
 ---
 
 ## TCGPlayer
