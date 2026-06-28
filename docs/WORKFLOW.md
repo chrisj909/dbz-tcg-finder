@@ -65,7 +65,7 @@ The original Phase 0–7 plan is essentially delivered; ongoing work is tracked 
 | Source | Where | Notes |
 |--------|-------|-------|
 | eBay, Craigslist, Facebook | **local scanner** | all 403 plain HTTP → Playwright on the residential IP. FB needs a saved session (`scanner/login.js facebook`) + personal profile. |
-| Vercel cron (`/api/cron/scan`) | cloud | currently runs the **dead** legacy `src/lib/scrapers` → produces nothing (#30). For future API/HTTP sources only. |
+| ~~Vercel cron~~ | — | **Retired (#30)** — `/api/cron/scan` is a no-op; all scanning is local. |
 
 ## Subagents (`.claude/agents/`)
 

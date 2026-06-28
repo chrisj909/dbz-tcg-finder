@@ -9,8 +9,8 @@ marketplaces, values it against **eBay-SOLD** medians, and surfaces **underprice
 One **Neon Postgres** DB, written by the scanner and read by the web app:
 
 1. **Cloud web app** (Vercel) — the dashboard + read APIs. Live at `dbz-tcg-finder.vercel.app`. No browser, always-on.
-   (It also ships a Vercel cron at `/api/cron/scan`, but that runs the **dead legacy** `src/lib/scrapers` and produces
-   nothing — see #30. It's vestigial; the local scanner is the real ingester.)
+   (The old Vercel cron was **retired** (#30): `/api/cron/scan` is now a no-op and the legacy `src/lib/scrapers` were
+   deleted — the local scanner is the only ingester.)
 2. **Local scanner** (`scanner/`, Chris's Windows PC) — a Node package that runs **every** marketplace source via
    **Playwright** (they all 403 plain HTTP, so each needs a real browser on a residential IP). Writes to Neon directly.
    Never deployed.
@@ -27,7 +27,7 @@ One **Neon Postgres** DB, written by the scanner and read by the web app:
         │  scanner/ (Node, Playwright)                    │        │  Next.js 14 (TS)         │
         │  run.js : scrape → upsert → scan_run            │        │  page.tsx  Deals/listings │
         │           → deal-score.js (vs market_values)    │        │  /api/inventory, /health │
-        │  market.js : eBay SOLD → market_values          │        │  /api/cron/scan (dead #30)│
+        │  market.js : eBay SOLD → market_values          │        │  /api/cron/scan (retired) │
         └───────────────────────┬─────────────────────────┘        └─────────────┬────────────┘
                 writes (direct)  │   @neondatabase/serverless         reads        │
                                  ▼                                                 ▼
@@ -48,7 +48,7 @@ One **Neon Postgres** DB, written by the scanner and read by the web app:
 |------|---------|
 | `src/` | Next.js 14 (App Router, TS, Tailwind) → Vercel. Dashboard + read APIs. |
 | `src/app/page.tsx` | Dashboard (RSC, `force-dynamic`). Listings grid + **Deals view** (`?view=deals`) + stats. |
-| `src/app/api/{inventory,health,cron/scan}/route.ts` | Read API · health · the (now-vestigial) cron. |
+| `src/app/api/{inventory,health,cron/scan}/route.ts` | Read API · health · cron route (retired no-op, #30). |
 | `src/lib/db.ts` | Lazy Neon client (`sql` tag) — never throws at import (build-safe without `DATABASE_URL`). |
 | `src/lib/types.ts` | Shared types (`Listing` incl. deal fields, `Source`, `Category`, `Era`, …). |
 | `src/components/` | `InventoryCard` (deal badge + "vs $N sold"), `StatsBar`. |
