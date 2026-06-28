@@ -1,0 +1,42 @@
+{
+  "_comment": "PROPOSED permission allowlist for the autonomous dev loop. This is a REFERENCE file, NOT active config. To use it, Chris copies the 'permissions' object into .claude/settings.json himself. The allow list covers exactly what dev-loop.md needs (build/lint/test, git on branches, gh for issues/PRs). The deny list blocks destructive git, pushing to main, and reading secret files. acceptEdits mode (see run-dev-loop.ps1) relies on this allowlist to keep dangerous commands gated.",
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm ci:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm test:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npx playwright:*)",
+      "Bash(node:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git switch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "Bash(git pull:*)",
+      "Bash(git push origin:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh api:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin HEAD:main:*)",
+      "Read(.env.local)",
+      "Read(.env)",
+      "Read(scanner/.env)",
+      "Read(scanner/.auth/**)"
+    ]
+  }
+}

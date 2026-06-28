@@ -30,6 +30,14 @@ yarn-error.log*
 # vercel
 .vercel
 
+# scanner secrets & saved browser sessions (NEVER commit)
+/scanner/.env
+/scanner/.auth/
+*.storageState.json
+
+# claude local overrides
+.claude/settings.local.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

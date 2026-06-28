@@ -1,6 +1,6 @@
 -- DBZ TCG Finder — Initial Schema
--- Run this in your Supabase SQL editor or via the Supabase CLI:
---   supabase db push
+-- Run this in the Neon SQL Editor (console.neon.tech) or via psql against DATABASE_URL.
+-- Standard PostgreSQL; no changes needed.
 
 -- ── listings ────────────────────────────────────────────────────────────────
 create table if not exists listings (
