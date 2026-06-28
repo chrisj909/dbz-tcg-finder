@@ -10,13 +10,13 @@ A multi-user web app that continually hunts **Dragon Ball Z sealed product (all 
 
 ## Architecture (see `docs/ARCHITECTURE.md`)
 
-- **`src/`** — Next.js 14 (App Router, TS, Tailwind) → deployed to **Vercel**. The dashboard + APIs + cron for *API/HTTP* sources.
+- **`src/`** — Next.js 14 (App Router, TS, Tailwind) → deployed to **Vercel**. The dashboard + read APIs.
 - **`scanner/`** — a **local Node package** that runs on Chris's Windows PC on a schedule. Owns the **browser sources** (Facebook Marketplace, OfferUp via Playwright + saved session) and can also run the API/HTTP sources. Writes to the same Neon DB. **Never deployed.**
 - **`db/migrations/`** — SQL migrations (Neon Postgres).
 - **`automation/`** — the self-maintenance loop (scheduled `claude` runs) + scan scheduler.
 - **Database:** Neon serverless Postgres (free). **Auth:** Neon Auth (Stack Auth) → `neon_auth.users_sync`.
 
-**Source split:** all marketplaces (eBay, Craigslist, Mercari, …) currently **scrape via a real browser** (they 403 plain HTTP), so they run in the **local scanner** on a residential IP. FB Marketplace + OfferUp additionally need a saved login. The Vercel cron is for any *future* API/HTTP source only (today it runs dead legacy scrapers — see #30).
+**Source split:** all marketplaces (eBay, Craigslist, Mercari, …) currently **scrape via a real browser** (they 403 plain HTTP), so they run in the **local scanner** on a residential IP. FB Marketplace + OfferUp additionally need a saved login. The Vercel cron was **retired** (#30) — `/api/cron/scan` is a no-op; all scanning is local.
 
 ## Commands
 
