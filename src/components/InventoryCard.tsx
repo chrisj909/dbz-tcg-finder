@@ -4,6 +4,9 @@ const SOURCE_STYLES: Record<string, string> = {
   tcgplayer: 'bg-blue-700 text-blue-100',
   ebay: 'bg-yellow-600 text-yellow-100',
   trollandtoad: 'bg-green-700 text-green-100',
+  craigslist: 'bg-purple-700 text-purple-100',
+  offerup: 'bg-teal-700 text-teal-100',
+  facebook: 'bg-sky-700 text-sky-100',
 }
 
 const PRODUCT_TYPE_LABELS: Record<string, string> = {
@@ -19,10 +22,10 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000
 export default function InventoryCard({ listing }: { listing: Listing }) {
   const sourceBadge = SOURCE_STYLES[listing.source] ?? 'bg-gray-700 text-gray-100'
   const isNew = Date.now() - new Date(listing.first_seen_at).getTime() < ONE_DAY_MS
-  const hasPriceDrop =
-    listing.previous_price != null &&
-    listing.price != null &&
-    listing.price < listing.previous_price
+  // Neon returns numeric columns as strings — coerce before any math/formatting.
+  const price = listing.price != null ? Number(listing.price) : null
+  const previousPrice = listing.previous_price != null ? Number(listing.previous_price) : null
+  const hasPriceDrop = previousPrice != null && price != null && price < previousPrice
 
   return (
     <a
@@ -84,11 +87,11 @@ export default function InventoryCard({ listing }: { listing: Listing }) {
         <div className="flex items-center justify-between mt-auto pt-1">
           <div className="flex flex-col">
             <span className="text-lg font-bold text-green-400">
-              {listing.price != null ? `$${listing.price.toFixed(2)}` : 'N/A'}
+              {price != null ? `$${price.toFixed(2)}` : 'N/A'}
             </span>
-            {hasPriceDrop && listing.previous_price != null && (
+            {hasPriceDrop && previousPrice != null && (
               <span className="text-xs text-gray-500 line-through">
-                ${listing.previous_price.toFixed(2)}
+                ${previousPrice.toFixed(2)}
               </span>
             )}
           </div>
