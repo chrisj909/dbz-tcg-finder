@@ -6,8 +6,21 @@ import StatsBar from '@/components/StatsBar'
 // Always reflect the latest scan — a live finder shouldn't serve 5-min-stale data.
 export const dynamic = 'force-dynamic'
 
-async function getListings(source?: string, productType?: string): Promise<Listing[]> {
+async function getListings(
+  source?: string,
+  productType?: string,
+  view?: string,
+): Promise<Listing[]> {
   try {
+    if (view === 'deals') {
+      const deals = await sql`
+        SELECT * FROM listings
+        WHERE is_active = true AND deal_score > 5
+        ORDER BY deal_score DESC, first_seen_at DESC
+        LIMIT 50
+      `
+      return deals as Listing[]
+    }
     const listings = await sql`
       SELECT * FROM listings
       WHERE is_active = true
@@ -29,33 +42,34 @@ async function getStats() {
   const todayISO = today.toISOString()
 
   try {
-    const [totalResult, newTodayResult, priceDropsResult] = await Promise.all([
+    const [totalResult, newTodayResult, dealsResult] = await Promise.all([
       sql`SELECT COUNT(*) AS count FROM listings WHERE is_active = true AND in_stock = true`,
       sql`SELECT COUNT(*) AS count FROM listings WHERE first_seen_at >= ${todayISO}`,
-      sql`SELECT COUNT(*) AS count FROM listings WHERE last_price_change_at >= ${todayISO} AND last_price_change_at IS NOT NULL`,
+      sql`SELECT COUNT(*) AS count FROM listings WHERE is_active = true AND deal_score > 5`,
     ])
     return {
       total: Number(totalResult[0].count),
       newToday: Number(newTodayResult[0].count),
-      priceDrops: Number(priceDropsResult[0].count),
+      deals: Number(dealsResult[0].count),
     }
   } catch (error) {
     console.error('Error fetching stats:', error)
-    return { total: 0, newToday: 0, priceDrops: 0 }
+    return { total: 0, newToday: 0, deals: 0 }
   }
 }
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: { source?: string; product_type?: string }
+  searchParams: { source?: string; product_type?: string; view?: string }
 }) {
   const [listings, stats] = await Promise.all([
-    getListings(searchParams.source, searchParams.product_type),
+    getListings(searchParams.source, searchParams.product_type, searchParams.view),
     getStats(),
   ])
 
-  const sources = ['tcgplayer', 'ebay', 'trollandtoad']
+  const dealsView = searchParams.view === 'deals'
+  const sources = ['ebay', 'craigslist', 'facebook']
   const productTypes = ['booster_box', 'booster_pack', 'case', 'bundle']
 
   return (
@@ -64,6 +78,16 @@ export default async function HomePage({
 
       {/* Filters */}
       <div className="flex gap-2 mt-6 mb-6 flex-wrap">
+        <a
+          href="?view=deals"
+          className={`px-3 py-1 rounded-full text-sm border font-medium transition-colors ${
+            dealsView
+              ? 'bg-emerald-500 border-emerald-400 text-black'
+              : 'border-emerald-700 text-emerald-400 hover:border-emerald-500'
+          }`}
+        >
+          🔥 Deals
+        </a>
         {sources.map((src) => (
           <a
             key={src}
