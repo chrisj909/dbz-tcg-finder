@@ -31,8 +31,9 @@ export function detectEra(title = '') {
 
 export function detectProductType(title = '') {
   const t = title.toLowerCase()
-  if (/(booster|display)\s*box|booster display/.test(t)) return 'booster_box'
+  // Check case before booster_box: "Booster Box Case" is a case (of boxes), not a box.
   if (/\bcase\b|case of/.test(t)) return 'case'
+  if (/(booster|display)\s*box|booster display/.test(t)) return 'booster_box'
   if (/booster pack/.test(t)) return 'booster_pack'
   if (/\bbundle\b|\blot\b/.test(t)) return 'bundle'
   return 'other'
