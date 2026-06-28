@@ -64,32 +64,35 @@ export async function upsertListing(sql, l) {
   const priceChanged =
     l.price != null && row.price != null && Number(row.price) !== Number(l.price)
 
+  // Refresh listing metadata (incl. image_url) on every sighting via COALESCE,
+  // so re-scans backfill images/titles without clobbering good data with nulls.
   if (priceChanged) {
     await sql`
       UPDATE listings SET
         last_seen_at = NOW(), updated_at = NOW(), is_active = true,
         in_stock = ${l.in_stock ?? true},
-        previous_price = ${row.price}, price = ${l.price},
-        last_price_change_at = NOW()
+        previous_price = ${row.price}, price = ${l.price}, last_price_change_at = NOW(),
+        image_url = COALESCE(${l.image_url ?? null}, image_url),
+        title = COALESCE(${l.title ?? null}, title),
+        set_name = COALESCE(${l.set_name ?? null}, set_name),
+        product_type = COALESCE(${l.product_type ?? null}, product_type),
+        seller = COALESCE(${l.seller ?? null}, seller)
       WHERE id = ${row.id}
     `
     return 'price_change'
   }
 
-  if (l.price != null) {
-    await sql`
-      UPDATE listings SET
-        last_seen_at = NOW(), updated_at = NOW(), is_active = true,
-        in_stock = ${l.in_stock ?? true}, price = ${l.price}
-      WHERE id = ${row.id}
-    `
-  } else {
-    await sql`
-      UPDATE listings SET
-        last_seen_at = NOW(), updated_at = NOW(), is_active = true,
-        in_stock = ${l.in_stock ?? true}
-      WHERE id = ${row.id}
-    `
-  }
+  await sql`
+    UPDATE listings SET
+      last_seen_at = NOW(), updated_at = NOW(), is_active = true,
+      in_stock = ${l.in_stock ?? true},
+      price = COALESCE(${l.price ?? null}, price),
+      image_url = COALESCE(${l.image_url ?? null}, image_url),
+      title = COALESCE(${l.title ?? null}, title),
+      set_name = COALESCE(${l.set_name ?? null}, set_name),
+      product_type = COALESCE(${l.product_type ?? null}, product_type),
+      seller = COALESCE(${l.seller ?? null}, seller)
+    WHERE id = ${row.id}
+  `
   return 'seen'
 }

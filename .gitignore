@@ -36,6 +36,9 @@ yarn-error.log*
 /scanner/.auth/
 *.storageState.json
 
+# scan/dev-loop logs
+/automation/logs/
+
 # claude local overrides
 .claude/settings.local.json
 
