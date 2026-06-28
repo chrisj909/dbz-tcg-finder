@@ -49,6 +49,7 @@ async function fetchSoldStats({ headless = true } = {}) {
           const lower = c.title.toLowerCase()
           if (/^shop on ebay$/i.test(c.title)) continue
           if (!p.must.every((m) => lower.includes(m))) continue
+          if (p.not && p.not.some((n) => lower.includes(n))) continue
           if (!SEALED_RE.test(c.title) || EXCLUDE_RE.test(c.title)) continue
           const pr = parsePrice(c.price)
           if (pr && pr > 5) prices.push(pr) // drop absurd lows (singles slipping through)
