@@ -1,5 +1,14 @@
 export type ProductType = 'booster_box' | 'booster_pack' | 'case' | 'bundle' | 'other'
-export type Source = 'tcgplayer' | 'ebay' | 'trollandtoad'
+export type Source =
+  | 'ebay'
+  | 'craigslist'
+  | 'facebook'
+  | 'offerup'
+  | 'mercari'
+  | 'tcgplayer'
+  | 'trollandtoad'
+export type Category = 'tcg_sealed' | 'merch'
+export type Era = 'score' | 'panini' | 'bandai_super'
 
 export interface Listing {
   id: string
@@ -20,6 +29,14 @@ export interface Listing {
   last_seen_at: string
   last_price_change_at?: string
   previous_price?: number
+  // reseller deal fields (migration 002)
+  category?: Category
+  era?: Era
+  market_value?: number
+  deal_score?: number
+  deal_reason?: string
+  city?: string
+  distance_mi?: number
   is_active: boolean
   created_at: string
   updated_at: string
