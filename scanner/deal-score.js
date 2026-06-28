@@ -22,7 +22,7 @@ export async function scoreDeals(sql) {
   // comparing a single/pack to a box median would be meaningless.
   const listings = await sql`
     SELECT id, title, price FROM listings
-    WHERE is_active = true AND price IS NOT NULL
+    WHERE is_active = true AND in_stock = true AND price IS NOT NULL
       AND product_type IN ('booster_box', 'case')
   `
 

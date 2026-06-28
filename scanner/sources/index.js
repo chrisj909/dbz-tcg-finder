@@ -4,6 +4,7 @@ import { scrapeCraigslist } from './craigslist.js'
 import { scrapeEbay } from './ebay.js'
 import { scrapeFacebook } from './facebook.js'
 import { scrapeTcgplayer } from './tcgplayer.js'
+import { scrapeTrollAndToad } from './trollandtoad.js'
 
 export const sources = {
   // eBay first — the core sealed-product source (national inventory).
@@ -30,5 +31,11 @@ export const sources = {
     browser: true,
     needsLogin: false,
     run: scrapeTcgplayer,
+  },
+  trollandtoad: {
+    label: 'Troll & Toad (sealed DBS — Shopify)',
+    browser: true,
+    needsLogin: false,
+    run: scrapeTrollAndToad,
   },
 }
