@@ -7,6 +7,7 @@
 import { chromium } from 'playwright'
 import { getSql } from './lib/db.js'
 import { parsePrice } from './lib/detect.js'
+import { PRODUCTS } from './market/products.js'
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
@@ -15,21 +16,8 @@ const SEALED_RE = /sealed|booster box|booster case|display box|booster display|\
 const EXCLUDE_RE =
   /\bsingles?\b|playmat|sleeves?|\bproxy\b|\bfigure\b|plush|funko|poster|\bempty\b|repack|\blot of\b|card lot|\bpromo\b/i
 
-// Curated sealed products. `must` = lowercase terms the sold title must contain
-// so we benchmark the RIGHT product. Add sets here as they release.
-const PRODUCTS = [
-  { key: 'fw-awakened-pulse', label: 'Fusion World — Awakened Pulse (FB01) Booster Box', query: 'dragon ball super fusion world awakened pulse booster box', must: ['awakened'] },
-  { key: 'fw-blazing-aura', label: 'Fusion World — Blazing Aura (FB02) Booster Box', query: 'dragon ball super fusion world blazing aura booster box', must: ['blazing'] },
-  { key: 'fw-raging-roar', label: 'Fusion World — Raging Roar (FB03) Booster Box', query: 'dragon ball super fusion world raging roar booster box', must: ['raging'] },
-  { key: 'fw-fighters-ambition', label: "Fusion World — Fighter's Ambition Booster Box", query: "dragon ball super fusion world fighter's ambition booster box", must: ['ambition'] },
-  { key: 'panini-vengeance', label: 'Panini — Vengeance Booster Box', query: 'dragon ball z panini vengeance booster box', must: ['vengeance'] },
-  { key: 'panini-perfection', label: 'Panini — Perfection Booster Box', query: 'dragon ball z panini perfection booster box', must: ['perfection'] },
-  { key: 'panini-heroes-villains', label: 'Panini — Heroes & Villains Booster Box', query: 'dragon ball z panini heroes and villains booster box', must: ['heroes'] },
-  { key: 'panini-evolution', label: 'Panini — Evolution Booster Box', query: 'dragon ball z panini evolution booster box', must: ['evolution'] },
-  { key: 'score-frieza-saga', label: 'Score — Frieza Saga Booster Box', query: 'dragon ball z score frieza saga booster box', must: ['frieza'] },
-  { key: 'score-cell-games', label: 'Score — Cell Games Booster Box', query: 'dragon ball z score cell games booster box', must: ['cell'] },
-  { key: 'score-android-saga', label: 'Score — Android Saga Booster Box', query: 'dragon ball z score android saga booster box', must: ['android'] },
-]
+// PRODUCTS + the matcher live in ./market/products.js (shared with the
+// deal-score engine). Add new sealed sets there.
 
 const median = (a) => {
   if (!a.length) return null

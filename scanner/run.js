@@ -7,6 +7,7 @@
 // Or from the repo root: node --env-file=.env.local scanner/run.js
 import { getSql, startScanRun, finishScanRun, upsertListing } from './lib/db.js'
 import { sources } from './sources/index.js'
+import { scoreDeals } from './deal-score.js'
 
 const sourceArg = process.argv.find((a) => a.startsWith('--source='))
 const only = sourceArg ? sourceArg.split('=')[1] : null
@@ -58,6 +59,13 @@ await finishScanRun(sql, scanId, {
   errors,
   status,
 })
+
+// Re-score deals against the latest market values after every scan.
+try {
+  await scoreDeals(sql)
+} catch (err) {
+  console.error('[deal-score] failed:', err.message)
+}
 
 console.log(
   `\nDone (#${scanId}). scraped=${totalScraped} new=${newCount} priceChanges=${priceChanges} errors=${errors.length}`,

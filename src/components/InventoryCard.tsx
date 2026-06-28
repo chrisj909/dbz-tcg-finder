@@ -26,13 +26,20 @@ export default function InventoryCard({ listing }: { listing: Listing }) {
   const price = listing.price != null ? Number(listing.price) : null
   const previousPrice = listing.previous_price != null ? Number(listing.previous_price) : null
   const hasPriceDrop = previousPrice != null && price != null && price < previousPrice
+  const dealScore = listing.deal_score != null ? Number(listing.deal_score) : null
+  const marketValue = listing.market_value != null ? Number(listing.market_value) : null
+  const isDeal = dealScore != null && dealScore >= 10
 
   return (
     <a
       href={listing.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex flex-col bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-orange-500 transition-colors"
+      className={`group flex flex-col bg-gray-900 border rounded-xl overflow-hidden transition-colors ${
+        isDeal
+          ? 'border-emerald-500/60 hover:border-emerald-400'
+          : 'border-gray-800 hover:border-orange-500'
+      }`}
     >
       {listing.image_url ? (
         <div className="aspect-square bg-gray-800 overflow-hidden">
@@ -72,6 +79,11 @@ export default function InventoryCard({ listing }: { listing: Listing }) {
                 PRICE DROP
               </span>
             )}
+            {isDeal && (
+              <span className="text-xs bg-emerald-500 text-black px-1.5 py-0.5 rounded font-bold">
+                DEAL −{dealScore}%
+              </span>
+            )}
           </div>
         </div>
 
@@ -93,6 +105,9 @@ export default function InventoryCard({ listing }: { listing: Listing }) {
               <span className="text-xs text-gray-500 line-through">
                 ${previousPrice.toFixed(2)}
               </span>
+            )}
+            {marketValue != null && (
+              <span className="text-xs text-gray-500">vs ${marketValue.toFixed(0)} sold</span>
             )}
           </div>
           <span
