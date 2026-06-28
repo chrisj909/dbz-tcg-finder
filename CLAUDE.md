@@ -16,7 +16,7 @@ A multi-user web app that continually hunts **Dragon Ball Z sealed product (all 
 - **`automation/`** — the self-maintenance loop (scheduled `claude` runs) + scan scheduler.
 - **Database:** Neon serverless Postgres (free). **Auth:** Neon Auth (Stack Auth) → `neon_auth.users_sync`.
 
-**Source split:** eBay (Browse API), Craigslist, Troll&Toad = no browser → run anywhere. Facebook Marketplace, OfferUp = need a logged-in browser → **local scanner only**.
+**Source split:** all marketplaces (eBay, Craigslist, Mercari, …) currently **scrape via a real browser** (they 403 plain HTTP), so they run in the **local scanner** on a residential IP. FB Marketplace + OfferUp additionally need a saved login. The Vercel cron is for any *future* API/HTTP source only (today it runs dead legacy scrapers — see #30).
 
 ## Commands
 
@@ -34,25 +34,25 @@ node scanner/run.js                    # run all sources
 2. **Never commit secrets.** `.env*`, `scanner/.env`, and saved browser sessions (`scanner/.auth/`, `*.storageState.json`) are gitignored — keep it that way. Don't paste connection strings or keys into code, docs, or commit messages.
 3. **Respect source ToS & rate limits.** Polite crawl delays; conservative frequency on Facebook Marketplace (highest detection risk — treat as best-effort).
 4. **Green-gate every change.** `npm run build` + `npm run lint` must pass before committing.
-5. **Branch + PR for code changes** made by the autonomous loop — never force-push, never push to `main` directly. Humans (Chris) merge.
+5. **Branch + PR + self-merge.** The loop works on a branch, green-gates, opens a PR, and — once *its own* tests pass — merges via `gh pr merge --squash` (Chris authorized self-merge). Never force-push; never push to `main` directly.
+6. **Flag human-only work plainly.** If a task needs a login, paid key, payment, or account toggle, comment + label `blocked:human`, skip it, move on. Never enter credentials or pay.
 
 ## Autonomous dev loop (see `automation/dev-loop.md`)
 
-Scheduled `claude` runs several times/day:
-1. Read this file + `docs/WORKFLOW.md` + open GitHub issues (`gh issue list`).
-2. Pick the **highest-priority open issue** (label `priority:high` first, else lowest number).
-3. Create a branch, implement, green-gate, open a PR linking the issue.
-4. If a scan or build is failing, **fix the bug first** and file an issue describing it.
-5. Log a one-line summary; stop. Don't start work you can't finish in the run.
+Scheduled `claude` runs several times/day execute `automation/dev-loop.md`:
+ground (incl. memory) → health-check → pick top issue → human-only check → branch →
+implement (using `.claude/agents/`) → **test/green-gate** → **self-merge** → **update memory + docs** → end.
 
-Use the subagents in `.claude/agents/` for focused work (`source-fixer`, `dashboard-dev`, `qa-verifier`, `backlog-groomer`).
+**Runtime split:** a **cloud Routine** runs the dev/backlog loop; a **local Windows cron** (`automation/run-scan.ps1`) runs the scanners. A cloud run can't drive the local browser, so it can't verify scrapers — it labels such PRs `needs:local-verify` and leaves them for a local run rather than merging.
+
+Subagents: `source-fixer`, `dashboard-dev`, `qa-verifier`, `backlog-groomer`.
 
 ## Human-in-the-loop (credentials Claude cannot self-provision)
 
 | Need | For | Where |
 |------|-----|-------|
 | Neon `DATABASE_URL` | everything | free project at console.neon.tech → `.env.local` |
-| eBay Client ID + Secret | eBay source | developer.ebay.com → `scanner/.env` |
+| Discord/Slack webhook URL | alert channel | paste into app settings (when alerts ship) |
 | Neon Auth enabled (Stack keys) | login | Neon console → Auth → `.env.local` |
 | FB/OfferUp login (one-time, headed) | browser sources | `node scanner/login.js` |
 
@@ -60,4 +60,4 @@ Use the subagents in `.claude/agents/` for focused work (`source-fixer`, `dashbo
 
 - Backlog = **GitHub issues**. Roadmap phases 0–7 are in `docs/WORKFLOW.md` and the plan.
 - Cross-session memory lives in Claude's memory dir (user/project/feedback facts) — already seeded.
-- Current known-broken: eBay Finding API is dead (rebuild on Browse API — Phase 2).
+- Current state: **live** at `dbz-tcg-finder.vercel.app`. eBay + Craigslist sources work (sealed-focused), populating Neon via the local scanner. Building toward a **reseller deal-finder**: eBay-SOLD market value (#24) → deal-score engine (#25) → multi-channel alerts (#26).
