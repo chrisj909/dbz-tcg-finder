@@ -12,10 +12,11 @@ All marketplaces 403 plain HTTP, so every source runs in the **local scanner** (
 | **eBay SOLD** (market value) | ✅ live | `scanner/market.js` → `market_values` resale benchmarks |
 | **Craigslist** | ✅ live | `bham`.craigslist.org (NOT `birmingham.*` = UK) |
 | **Facebook Marketplace** | ✅ live | Birmingham; needs PERSONAL FB profile + saved session (`scanner/login.js facebook`); FB image URLs expire (#35) |
-| **TCGplayer** | ✅ live | `scanner/sources/tcgplayer.js` — DBS Fusion World "Sealed Products" category; lowest "from" price per box (renders headless). Market-price→`market_values` is a follow-up. |
+| **TCGplayer** | ✅ live | `scanner/sources/tcgplayer.js` — DBS Fusion World "Sealed Products" category; lowest "from" price per box (renders headless). Market-price→`market_values` is a follow-up (#44). |
+| **Troll & Toad** | ✅ live | `scanner/sources/trollandtoad.js` — relaunched on Shopify; reads `products.json` for the DBS "Sealed Product" collection. No Cloudflare. Mid soft-reopen → currently all out-of-stock (catalog/prices captured, restock-ready). |
 | **OfferUp** | ⏳ planned | Playwright + login (#7) |
 | **Mercari** | ⏸ parked | `#27` — headless returns 0 (consent gate + anti-bot); needs a saved session / headed run. Branch `feat/27-mercari`. |
-| **Troll&Toad / local shops** | ⏳ planned | #18 / #10 |
+| **Local card shops** | ⏳ planned | #10 |
 
 The legacy `src/lib/scrapers/*` were removed in #30 (the Vercel cron is now a no-op); all scraping lives in `scanner/`. The per-source reference sections below predate the scanner — treat the table above as the source of truth.
 
@@ -63,17 +64,20 @@ The legacy `src/lib/scrapers/*` were removed in #30 (the Vercel cron is now a no
 
 | Field | Value |
 |-------|-------|
-| **Status** | Functional — HTML scrape |
-| **Method** | HTML scraping (no public API) |
-| **Search URL** | https://www.trollandtoad.com/dragon-ball-super/all-sealed-product/ |
+| **Status** | ✅ live — `scanner/sources/trollandtoad.js` (Shopify JSON, no API key) |
+| **Method** | Shopify `products.json` (T&T relaunched on Shopify; the old `.product-col` HTML scrape is dead) |
+| **Collection** | https://www.trollandtoad.com/collections/dragon-ball-super-sealed-product |
+| **JSON** | `/collections/dragon-ball-super-sealed-product/products.json?limit=250&page=N` |
 | **robots.txt** | https://www.trollandtoad.com/robots.txt |
 | **ToS** | https://www.trollandtoad.com/info/terms-of-use |
 
+**How it works:** Playwright lands on the collection page (sets cookies — no Cloudflare wall as of the relaunch), then reads the same-origin Shopify `products.json`. Each product gives `title`, `variants[].price`/`available`, `images[]`, and a `handle` → `/products/<handle>`. We keep boxes/cases (`detectProductType`) and map `available`→`in_stock`.
+
 **Notes:**
-- No official API. The scraper parses product cards from their HTML.
-- Check `robots.txt` before production use — respect any `Crawl-delay` directives.
-- The parser targets `.product-col` class containers; may break if Troll and Toad updates their HTML structure.
-- Consider adding a polite delay (`await new Promise(r => setTimeout(r, 1000))`) between pages if scraping pagination.
+- T&T is mid soft-reopen → catalog is listed but **all out-of-stock**; we still record it (prices + restock-readiness). `deal-score` only flags `in_stock` items, so out-of-stock boxes never show as "deals".
+- Shopify caps `products.json` at 250/page; paginate with `&page=`.
+- Follow-up: add vintage DBZ (Score/Panini) + other DBS sealed collections (e.g. `dragon-ball-super-expansion-sets`) once prioritized.
+- Be polite — one collection fetch per run is plenty.
 
 ---
 
