@@ -21,9 +21,9 @@ The original Phase 0–7 plan is essentially delivered; ongoing work is tracked 
 - [x] **Phase 0 — Running** locally + deployed (Vercel + Neon).
 - [x] **Phase 1 — Agentic infra** (CLAUDE.md, `.claude/agents/`, `automation/`, docs, backlog).
 - [x] **Phase 2 — eBay** — live via **Playwright search-scrape** (no API key; the Browse-API path is the optional #4).
-- [~] **Phase 3 — Local sources** — Craigslist ✅, Facebook Marketplace ✅; OfferUp/Mercari/TCGPlayer/local-shops open (#7/#27/#28/#10).
+- [~] **Phase 3 — Local sources** — Craigslist ✅ (relevance-filtered, #20), Facebook Marketplace ✅, TCGplayer ✅ (#28); OfferUp (#7, needs login), Mercari (#27, headless-blocked/parked), local-shops (#10) open.
 - [x] **Phase 4 — Data model** — migration `002` (category, era, location, `market_value`, `deal_score`; `market_values`, `price_history` tables).
-- [~] **Phase 5 — Dashboard** — Deals view + deal badges + market-value ✅; full client-side search/sort + watchlists open (#12/#14).
+- [~] **Phase 5 — Dashboard** — Deals view + deal badges + market-value ✅; client-side search/filters/sort ✅ (#12); per-user watchlists open (#14, needs auth) + durable images (#35).
 - [ ] **Phase 6 — Neon Auth** + multi-channel alerts (#15/#26).
 - [x] **Phase 7 — Deployed** to Vercel (`dbz-tcg-finder.vercel.app`). Cleanup of the dead cron is #30.
 
