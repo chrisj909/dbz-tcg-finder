@@ -3,6 +3,7 @@
 import { scrapeCraigslist } from './craigslist.js'
 import { scrapeEbay } from './ebay.js'
 import { scrapeFacebook } from './facebook.js'
+import { scrapeTcgplayer } from './tcgplayer.js'
 
 export const sources = {
   // eBay first — the core sealed-product source (national inventory).
@@ -23,5 +24,11 @@ export const sources = {
     browser: true,
     needsLogin: true, // run `node scanner/login.js facebook` once
     run: scrapeFacebook,
+  },
+  tcgplayer: {
+    label: 'TCGplayer (sealed DBS — Fusion World)',
+    browser: true,
+    needsLogin: false,
+    run: scrapeTcgplayer,
   },
 }

@@ -12,10 +12,12 @@ All marketplaces 403 plain HTTP, so every source runs in the **local scanner** (
 | **eBay SOLD** (market value) | ✅ live | `scanner/market.js` → `market_values` resale benchmarks |
 | **Craigslist** | ✅ live | `bham`.craigslist.org (NOT `birmingham.*` = UK) |
 | **Facebook Marketplace** | ✅ live | Birmingham; needs PERSONAL FB profile + saved session (`scanner/login.js facebook`); FB image URLs expire (#35) |
+| **TCGplayer** | ✅ live | `scanner/sources/tcgplayer.js` — DBS Fusion World "Sealed Products" category; lowest "from" price per box (renders headless). Market-price→`market_values` is a follow-up. |
 | **OfferUp** | ⏳ planned | Playwright + login (#7) |
-| **Mercari / TCGPlayer / Troll&Toad / local shops** | ⏳ planned | #27 / #28 / #18 / #10 |
+| **Mercari** | ⏸ parked | `#27` — headless returns 0 (consent gate + anti-bot); needs a saved session / headed run. Branch `feat/27-mercari`. |
+| **Troll&Toad / local shops** | ⏳ planned | #18 / #10 |
 
-The legacy `src/lib/scrapers/*` (TCGPlayer stub, dead eBay Finding API, 404 Troll&Toad) are superseded by the scanner; the Vercel cron that still runs them is dead weight (#30).
+The legacy `src/lib/scrapers/*` were removed in #30 (the Vercel cron is now a no-op); all scraping lives in `scanner/`. The per-source reference sections below predate the scanner — treat the table above as the source of truth.
 
 ---
 
@@ -23,17 +25,14 @@ The legacy `src/lib/scrapers/*` (TCGPlayer stub, dead eBay Finding API, 404 Trol
 
 | Field | Value |
 |-------|-------|
-| **Status** | Stub — returns empty until API key or headless browser is added |
-| **Search URL** | https://www.tcgplayer.com/search/dragon-ball-super-card-game/product?productLineName=dragon-ball-super-card-game&q=sealed&view=grid&inStock=true |
-| **Method** | Official API (recommended) or headless browser |
-| **API registration** | https://developer.tcgplayer.com |
-| **Auth** | Client credentials — `TCGPLAYER_PUBLIC_KEY` + `TCGPLAYER_PRIVATE_KEY` |
+| **Status** | ✅ live — `scanner/sources/tcgplayer.js` (headless Playwright, no API key) |
+| **Search URL** | https://www.tcgplayer.com/search/dragon-ball-super-fusion-world/product?productLineName=dragon-ball-super-fusion-world&view=grid&ProductTypeName=Sealed+Products |
+| **Method** | Headless Chromium — the category page renders product cards client-side but does so fine headless (unlike Mercari) |
 | **robots.txt** | https://www.tcgplayer.com/robots.txt |
 
-**Notes:** TCGPlayer renders product listings via React/JavaScript, so basic HTML fetching returns a mostly-empty shell. Two options:
+**How it works:** each product card is an `a[href*="/product/"]` whose `innerText` is `Set | rarity | Name | N listings from | $lowestPrice`. We pull the product id from the href, parse the name + lowest "from" price, keep boxes/cases (`detectProductType` ∈ {booster_box, case, bundle} — drops single/tournament packs), and upsert as `source='tcgplayer'`. Paginates `&page=1..3`; stops when a page returns no cards.
 
-1. **Official API** (recommended): Register at developer.tcgplayer.com, obtain API keys, use `POST /v1.39.0/catalog/products/search` with `categoryId: 68` (Dragon Ball Super). Add `TCGPLAYER_PUBLIC_KEY` and `TCGPLAYER_PRIVATE_KEY` to env vars.
-2. **Headless browser**: Deploy a Puppeteer/Playwright function on a service that allows long-running processes (e.g. a separate Render or Railway service) and call it from the cron job.
+**Follow-ups:** (1) capture each product's **Market Price** into `market_values(source='tcgplayer')` so the deal engine can cross-reference TCGplayer alongside eBay-SOLD; (2) add the vintage DBZ product lines (Panini/Score) once their TCGplayer category URLs are confirmed. The official API (developer.tcgplayer.com, `categoryId: 68`) remains an option if the scrape ever breaks, but isn't needed today.
 
 ---
 
