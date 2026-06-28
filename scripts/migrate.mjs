@@ -17,8 +17,15 @@ if (!url) {
 }
 const sql = neon(url)
 
+// neon() executes tagged templates; wrap a raw statement as a no-interpolation
+// template so we can run arbitrary DDL strings (this driver has no sql.query()).
+const asTemplate = (text) => Object.assign([text], { raw: [text] })
+
 // Split SQL into statements, treating text between $$ ... $$ as opaque.
 function splitStatements(text) {
+  // Strip line comments first so a ';' inside a comment isn't treated as a
+  // statement separator. (Our migrations have no '--' inside strings or $$ bodies.)
+  text = text.replace(/--[^\n]*/g, '')
   const out = []
   let buf = ''
   let inDollar = false
@@ -67,7 +74,7 @@ for (const file of files) {
   for (const stmt of statements) {
     const label = stmt.replace(/--.*$/gm, '').trim().replace(/\s+/g, ' ').slice(0, 60)
     try {
-      await sql.query(stmt)
+      await sql(asTemplate(stmt))
       console.log(`  ok    ${label}`)
       applied++
     } catch (e) {
