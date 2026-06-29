@@ -4,6 +4,7 @@ import { scrapeCraigslist } from './craigslist.js'
 import { scrapeEbay } from './ebay.js'
 import { scrapeFacebook } from './facebook.js'
 import { scrapeLocalShops } from './local-shops.js'
+import { scrapeMercari } from './mercari.js'
 import { scrapeOfferUp } from './offerup.js'
 import { scrapeTcgplayer } from './tcgplayer.js'
 import { scrapeTrollAndToad } from './trollandtoad.js'
@@ -39,6 +40,12 @@ export const sources = {
     browser: true,
     needsLogin: false,
     run: scrapeTrollAndToad,
+  },
+  mercari: {
+    label: 'Mercari (sealed DBZ — national)',
+    browser: true,
+    needsLogin: false,
+    run: scrapeMercari,
   },
   offerup: {
     label: 'OfferUp (Birmingham area)',
