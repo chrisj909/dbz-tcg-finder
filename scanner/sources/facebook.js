@@ -128,9 +128,30 @@ export async function scrapeFacebook({ headless = true } = {}) {
         console.error(`[facebook] query "${q}" failed: ${err.message}`)
       }
     }
+
+    // Download FB images as base64 data URLs while still inside the browser context.
+    // FB CDN URLs include auth tokens that expire; storing the bytes makes them permanent.
+    for (const listing of listings) {
+      if (!listing.image_url) continue
+      try {
+        listing.image_data = await page.evaluate(async (url) => {
+          const r = await fetch(url)
+          if (!r.ok) return null
+          const blob = await r.blob()
+          return await new Promise((resolve) => {
+            const fr = new FileReader()
+            fr.onloadend = () => resolve(fr.result)
+            fr.readAsDataURL(blob)
+          })
+        }, listing.image_url)
+      } catch {
+        // non-fatal — image_url still present as fallback
+      }
+    }
   } finally {
     await browser.close()
   }
 
+  console.log(`[facebook] ${listings.length} listing(s); images cached: ${listings.filter(l => l.image_data).length}`)
   return listings
 }

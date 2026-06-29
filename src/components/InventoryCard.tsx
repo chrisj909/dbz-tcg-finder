@@ -41,11 +41,11 @@ export default function InventoryCard({ listing }: { listing: Listing }) {
           : 'border-gray-800 hover:border-orange-500'
       }`}
     >
-      {listing.image_url ? (
+      {listing.image_url || listing.has_stored_image ? (
         <div className="aspect-square bg-gray-800 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={listing.image_url}
+            src={listing.has_stored_image ? `/api/images/${listing.id}` : listing.image_url}
             alt={listing.title}
             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
             loading="lazy"
