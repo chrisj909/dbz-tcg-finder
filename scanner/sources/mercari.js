@@ -50,7 +50,7 @@ export async function scrapeMercari({ headless = true } = {}) {
             const m = a.getAttribute('href')?.match(/\/item\/(m\d+)/i)
             if (!m || local.has(m[1])) continue
             local.add(m[1])
-            out.push({ id: m[1], lines: (a.innerText || '').split('\n').map((s) => s.trim()).filter(Boolean) })
+            out.push({ id: m[1], lines: (a.innerText || '').split('\n').map((s) => s.trim()).filter(Boolean), img: a.querySelector('img')?.src || undefined })
           }
           return out
         })
@@ -78,6 +78,7 @@ export async function scrapeMercari({ headless = true } = {}) {
             price: parsePrice(priceLine),
             currency: 'USD',
             in_stock: true,
+            image_url: it.img,
             seller: 'Mercari',
             set_name: detectSetName(title),
             product_type: detectProductType(title),
