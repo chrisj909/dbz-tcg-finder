@@ -11,7 +11,15 @@ export async function GET(request: NextRequest) {
 
   try {
     const listings = await sql`
-      SELECT * FROM listings
+      SELECT
+        id, source, external_id, title, url, price, currency, condition,
+        in_stock, quantity_available, image_url,
+        (image_data IS NOT NULL) AS has_stored_image,
+        seller, set_name, product_type, category, era,
+        market_value, deal_score, deal_reason, city, distance_mi,
+        first_seen_at, last_seen_at, last_price_change_at, previous_price,
+        is_active, created_at, updated_at
+      FROM listings
       WHERE is_active = true
         AND (${source}::text IS NULL OR source = ${source})
         AND (${productType}::text IS NULL OR product_type = ${productType})

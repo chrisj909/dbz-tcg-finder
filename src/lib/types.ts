@@ -5,6 +5,7 @@ export type Source =
   | 'facebook'
   | 'offerup'
   | 'mercari'
+  | 'local_shop'
   | 'tcgplayer'
   | 'trollandtoad'
 export type Category = 'tcg_sealed' | 'merch'
@@ -24,6 +25,7 @@ export interface Listing {
   quantity_available?: number
   url: string
   image_url?: string
+  has_stored_image?: boolean
   seller?: string
   first_seen_at: string
   last_seen_at: string
