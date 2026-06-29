@@ -8,6 +8,7 @@
 import { getSql, startScanRun, finishScanRun, upsertListing } from './lib/db.js'
 import { sources } from './sources/index.js'
 import { scoreDeals } from './deal-score.js'
+import { checkSessions, printSessionWarnings } from './lib/session-health.js'
 
 const sourceArg = process.argv.find((a) => a.startsWith('--source='))
 const only = sourceArg ? sourceArg.split('=')[1] : null
@@ -18,6 +19,9 @@ if (only && !sources[only]) {
   process.exit(1)
 }
 const selected = only ? { [only]: sources[only] } : sources
+
+// Warn about expired/missing login sessions before scanning.
+printSessionWarnings(checkSessions())
 
 const sql = getSql()
 const scanId = await startScanRun(sql)
