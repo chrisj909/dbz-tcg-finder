@@ -14,12 +14,8 @@ const SESSION_CONFIGS = {
   },
   offerup: {
     path: fileURLToPath(new URL('../.auth/offerup.json', import.meta.url)),
-    // OU.USER_CONTEXT_COOKIE contains user_id when logged in
-    validate: (state) => {
-      const c = state.cookies?.find((c) => c.name === 'OU.USER_CONTEXT_COOKIE')
-      if (!c?.value) return false
-      try { return !!JSON.parse(decodeURIComponent(c.value)).user_id } catch { return false }
-    },
+    // jwt_token is set only for authenticated sessions; ou.ppid is also a reliable signal
+    validate: (state) => state.cookies?.some((c) => c.name === 'jwt_token' && c.value),
     renewCmd: 'node scanner/login.js offerup',
   },
 }
