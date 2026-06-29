@@ -11,6 +11,7 @@ import {
   parsePrice,
   parseCraigslistMeta,
 } from '../lib/detect.js'
+import { distanceFromBirmingham } from '../lib/geo.js'
 
 const AREA = 'bham' // Birmingham, Alabama
 const QUERIES = [
@@ -78,6 +79,7 @@ export async function scrapeCraigslist({ headless = true } = {}) {
           if (INSTRUMENT_RE.test(title)) continue // #20: drop DBZ-guitar/instrument false positives
           seen.add(it.pid)
           const { location } = parseCraigslistMeta(it.meta)
+          const distanceMi = distanceFromBirmingham(location)
           listings.push({
             source: 'craigslist',
             external_id: it.pid,
@@ -87,7 +89,8 @@ export async function scrapeCraigslist({ headless = true } = {}) {
             currency: 'USD',
             in_stock: true,
             image_url: it.img,
-            // location stand-in until the location column lands in Phase 4
+            city: location ?? null,
+            distance_mi: distanceMi,
             seller: location ? `Craigslist · ${location}` : 'Craigslist',
             set_name: detectSetName(title),
             product_type: detectProductType(title),

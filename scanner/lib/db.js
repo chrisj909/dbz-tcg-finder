@@ -48,12 +48,14 @@ export async function upsertListing(sql, l) {
       INSERT INTO listings (
         source, external_id, title, url, price, currency, in_stock,
         quantity_available, product_type, set_name, condition, image_url, image_data, seller,
+        city, distance_mi,
         first_seen_at, last_seen_at, is_active
       ) VALUES (
         ${l.source}, ${l.external_id}, ${l.title ?? null}, ${l.url ?? null},
         ${l.price ?? null}, ${l.currency ?? 'USD'}, ${l.in_stock ?? true},
         ${l.quantity_available ?? null}, ${l.product_type ?? null}, ${l.set_name ?? null},
         ${l.condition ?? null}, ${l.image_url ?? null}, ${l.image_data ?? null}, ${l.seller ?? null},
+        ${l.city ?? null}, ${l.distance_mi ?? null},
         NOW(), NOW(), true
       )
     `
@@ -77,7 +79,9 @@ export async function upsertListing(sql, l) {
         title = COALESCE(${l.title ?? null}, title),
         set_name = COALESCE(${l.set_name ?? null}, set_name),
         product_type = COALESCE(${l.product_type ?? null}, product_type),
-        seller = COALESCE(${l.seller ?? null}, seller)
+        seller = COALESCE(${l.seller ?? null}, seller),
+        city = COALESCE(${l.city ?? null}, city),
+        distance_mi = COALESCE(${l.distance_mi ?? null}, distance_mi)
       WHERE id = ${row.id}
     `
     return 'price_change'
@@ -93,7 +97,9 @@ export async function upsertListing(sql, l) {
       title = COALESCE(${l.title ?? null}, title),
       set_name = COALESCE(${l.set_name ?? null}, set_name),
       product_type = COALESCE(${l.product_type ?? null}, product_type),
-      seller = COALESCE(${l.seller ?? null}, seller)
+      seller = COALESCE(${l.seller ?? null}, seller),
+      city = COALESCE(${l.city ?? null}, city),
+      distance_mi = COALESCE(${l.distance_mi ?? null}, distance_mi)
     WHERE id = ${row.id}
   `
   return 'seen'
