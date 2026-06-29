@@ -90,10 +90,17 @@ export default function InventoryCard({ listing }: { listing: Listing }) {
         {/* Title */}
         <h3 className="text-sm font-medium leading-snug line-clamp-2 flex-1">{listing.title}</h3>
 
-        {/* Set name */}
-        {listing.set_name && (
-          <p className="text-xs text-gray-500">{listing.set_name}</p>
-        )}
+        {/* Set name + distance */}
+        <div className="flex items-center justify-between gap-1">
+          {listing.set_name && (
+            <p className="text-xs text-gray-500 truncate">{listing.set_name}</p>
+          )}
+          {listing.distance_mi != null && (
+            <p className="text-xs text-gray-500 whitespace-nowrap ml-auto">
+              {Number(listing.distance_mi)} mi
+            </p>
+          )}
+        </div>
 
         {/* Price + stock */}
         <div className="flex items-center justify-between mt-auto pt-1">
