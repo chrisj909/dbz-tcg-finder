@@ -19,8 +19,9 @@ const SITES = {
   },
   offerup: {
     loginUrl: 'https://offerup.com/login',
-    cookie: 'ou_id', // best-effort auth cookie
     note: 'Log in to OfferUp (set your location to Birmingham, AL).',
+    // Detect success by URL: a successful login redirects away from /login
+    detectUrl: (url) => url.includes('offerup.com') && !url.includes('/login'),
   },
 }
 
@@ -45,10 +46,16 @@ console.log('Waiting up to 8 minutes for you to finish logging in...\n')
 const deadline = Date.now() + 8 * 60 * 1000
 let ok = false
 while (Date.now() < deadline) {
-  const cookies = await ctx.cookies()
-  if (cookies.some((c) => c.name === cfg.cookie && c.value)) {
-    ok = true
-    break
+  if (cfg.detectUrl) {
+    // URL-based detection: login succeeded when the page navigates away from /login
+    if (cfg.detectUrl(page.url())) { ok = true; break }
+  } else if (cfg.cookie) {
+    const cookies = await ctx.cookies()
+    const match = cookies.find((c) => c.name === cfg.cookie && c.value)
+    if (match) {
+      const valid = cfg.validate ? cfg.validate(match.value) : true
+      if (valid) { ok = true; break }
+    }
   }
   await page.waitForTimeout(3000)
 }
