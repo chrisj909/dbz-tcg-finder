@@ -5,7 +5,8 @@
 // sealed boxes on TCGplayer Pro) and fires immediately when one restocks.
 //
 // Shops covered: Gear Gaming Birmingham, Card Addicts, Iron City Games.
-// Future: Pinnacle Cards & Games (pinnaclecag.com — structure TBD, #10 follow-up).
+// Pinnacle Cards & Games evaluated (#59) — no scrapeable storefront found (site
+// down, location appears closed as of late 2024); not added.
 import { chromium } from 'playwright'
 import { getSql } from '../lib/db.js'
 import { detectSetName, detectProductType } from '../lib/detect.js'

@@ -2,10 +2,8 @@
 // Fusion World "Sealed Products" category (renders fine headless). Each product
 // card: a[href*="/product/"] (id), innerText "Set | rarity | Name | N listings
 // from | $lowestPrice". We keep boxes/cases (drop single/tournament packs) and
-// record the lowest available ("from") price.
-//
-// TODO (#28 follow-up): also capture the per-product TCGplayer Market Price into
-// market_values(source='tcgplayer') for cross-source deal scoring.
+// record the lowest available ("from") price. Per-product Market Price is
+// captured separately by market-tcgplayer.js -> market_values(source='tcgplayer').
 import { chromium } from 'playwright'
 import { detectSetName, detectProductType, parsePrice } from '../lib/detect.js'
 
