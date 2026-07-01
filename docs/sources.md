@@ -16,7 +16,7 @@ All marketplaces 403 plain HTTP, so every source runs in the **local scanner** (
 | **Troll & Toad** | ✅ live | `scanner/sources/trollandtoad.js` — relaunched on Shopify; reads `products.json` for the DBS "Sealed Product" collection. No Cloudflare. Mid soft-reopen → currently all out-of-stock (catalog/prices captured, restock-ready). |
 | **OfferUp** | ✅ live | `scanner/sources/offerup.js` — Playwright + saved session (PR #53); 6 search queries; set location to Birmingham AL on login. Renew session: `node scanner/login.js offerup` |
 | **Mercari** | ✅ live | `scanner/sources/mercari.js` — `playwright-extra` + stealth plugin bypasses Mercari's anti-bot gate (PR #54); 40–47 sealed DBZ listings per run; no login required |
-| **Local card shops** | ✅ live | `scanner/sources/local-shops.js` — Gear Gaming Bham, Card Addicts, Iron City Games; queries each shop's TCGplayer Pro inventory API for our known sealed product IDs. Currently all 0 in-stock for sealed boxes (shops sell singles, not sealed on TCGplayer Pro). Fires when any shop restocks. Pinnacle Cards & Games (#10 follow-up — site structure TBD). |
+| **Local card shops** | ✅ live | `scanner/sources/local-shops.js` — Gear Gaming Bham, Card Addicts, Iron City Games; queries each shop's TCGplayer Pro inventory API for our known sealed product IDs. Currently all 0 in-stock for sealed boxes (shops sell singles, not sealed on TCGplayer Pro). Fires when any shop restocks. Pinnacle Cards & Games evaluated (#59) — no scrapeable storefront (location appears closed); not added. |
 
 The legacy `src/lib/scrapers/*` were removed in #30 (the Vercel cron is now a no-op); all scraping lives in `scanner/`. The per-source reference sections below predate the scanner — treat the table above as the source of truth.
 
