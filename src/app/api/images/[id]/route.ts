@@ -5,9 +5,10 @@ import { sql } from '@/lib/db'
 // images at scan time and serve them permanently from the DB (migration 003).
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const rows = await sql`SELECT image_data FROM listings WHERE id = ${params.id} LIMIT 1`
+  const { id } = await params
+  const rows = await sql`SELECT image_data FROM listings WHERE id = ${id} LIMIT 1`
   const imageData: string | null = rows[0]?.image_data ?? null
 
   if (!imageData) {
