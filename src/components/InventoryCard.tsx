@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Listing } from '@/lib/types'
 
 const SOURCE_STYLES: Record<string, string> = {
@@ -21,7 +22,10 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000
 
 export default function InventoryCard({ listing }: { listing: Listing }) {
   const sourceBadge = SOURCE_STYLES[listing.source] ?? 'bg-gray-700 text-gray-100'
-  const isNew = Date.now() - new Date(listing.first_seen_at).getTime() < ONE_DAY_MS
+  // Date.now() is impure, so capture "now" once via a lazy initializer (runs only
+  // on first render, not on every re-render) rather than reading it during render.
+  const [now] = useState(() => Date.now())
+  const isNew = now - new Date(listing.first_seen_at).getTime() < ONE_DAY_MS
   // Neon returns numeric columns as strings — coerce before any math/formatting.
   const price = listing.price != null ? Number(listing.price) : null
   const previousPrice = listing.previous_price != null ? Number(listing.previous_price) : null
