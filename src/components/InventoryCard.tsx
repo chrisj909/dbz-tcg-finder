@@ -20,7 +20,15 @@ const PRODUCT_TYPE_LABELS: Record<string, string> = {
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
 
-export default function InventoryCard({ listing }: { listing: Listing }) {
+export default function InventoryCard({
+  listing,
+  isWatchlisted,
+  onToggleWatchlist,
+}: {
+  listing: Listing
+  isWatchlisted?: boolean
+  onToggleWatchlist?: (listingId: string) => void
+}) {
   const sourceBadge = SOURCE_STYLES[listing.source] ?? 'bg-gray-700 text-gray-100'
   // Date.now() is impure, so capture "now" once via a lazy initializer (runs only
   // on first render, not on every re-render) rather than reading it during render.
@@ -35,16 +43,29 @@ export default function InventoryCard({ listing }: { listing: Listing }) {
   const isDeal = dealScore != null && dealScore >= 10
 
   return (
-    <a
-      href={listing.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`group flex flex-col bg-gray-900 border rounded-xl overflow-hidden transition-colors ${
+    <div
+      className={`group relative flex flex-col bg-gray-900 border rounded-xl overflow-hidden transition-colors ${
         isDeal
           ? 'border-emerald-500/60 hover:border-emerald-400'
           : 'border-gray-800 hover:border-orange-500'
       }`}
     >
+      {onToggleWatchlist && (
+        <button
+          type="button"
+          onClick={() => onToggleWatchlist(listing.id)}
+          aria-label={isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
+          aria-pressed={isWatchlisted}
+          className={`absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full text-sm transition-colors ${
+            isWatchlisted
+              ? 'bg-yellow-500 text-black'
+              : 'bg-black/50 text-gray-300 hover:text-yellow-400'
+          }`}
+        >
+          {isWatchlisted ? '★' : '☆'}
+        </button>
+      )}
+      <a href={listing.url} target="_blank" rel="noopener noreferrer" className="flex flex-col flex-1">
       {listing.image_url || listing.has_stored_image ? (
         <div className="aspect-square bg-gray-800 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -132,6 +153,7 @@ export default function InventoryCard({ listing }: { listing: Listing }) {
           </span>
         </div>
       </div>
-    </a>
+      </a>
+    </div>
   )
 }

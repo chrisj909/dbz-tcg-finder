@@ -36,12 +36,55 @@ const TYPE_LABELS: Record<string, string> = {
 // Neon returns numeric columns as strings — coerce before any math/compare.
 const num = (v: unknown): number | null => (v == null ? null : Number(v))
 
-export default function DashboardClient({ listings }: { listings: Listing[] }) {
+export default function DashboardClient({
+  listings,
+  signedIn = false,
+  initialWatchlistIds = [],
+}: {
+  listings: Listing[]
+  signedIn?: boolean
+  initialWatchlistIds?: string[]
+}) {
   const [query, setQuery] = useState('')
   const [sources, setSources] = useState<Set<string>>(new Set())
   const [types, setTypes] = useState<Set<string>>(new Set())
   const [dealsOnly, setDealsOnly] = useState(false)
+  const [watchlistOnly, setWatchlistOnly] = useState(false)
   const [sort, setSort] = useState('new')
+  const [watchlistIds, setWatchlistIds] = useState<Set<string>>(new Set(initialWatchlistIds))
+
+  const toggleWatchlistItem = (listingId: string) => {
+    const isWatchlisted = watchlistIds.has(listingId)
+    // Optimistic update — revert on failure.
+    setWatchlistIds((prev) => {
+      const next = new Set(prev)
+      if (isWatchlisted) next.delete(listingId)
+      else next.add(listingId)
+      return next
+    })
+    const req = isWatchlisted
+      ? fetch(`/api/watchlist/${listingId}`, { method: 'DELETE' })
+      : fetch('/api/watchlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ listingId }),
+        })
+    req
+      .then((res) => {
+        // A stale/expired session gets redirected to /auth/sign-in by the proxy
+        // rather than a clean 401 — fetch follows that redirect, so res.ok alone
+        // (true for the sign-in HTML page) wouldn't catch the failure.
+        if (!res.ok || res.redirected) throw new Error(`watchlist request failed: ${res.status}`)
+      })
+      .catch(() => {
+        setWatchlistIds((prev) => {
+          const next = new Set(prev)
+          if (isWatchlisted) next.add(listingId)
+          else next.delete(listingId)
+          return next
+        })
+      })
+  }
 
   // Facets present in the data, so chips only show what actually exists.
   const sourceOpts = useMemo(
@@ -71,6 +114,7 @@ export default function DashboardClient({ listings }: { listings: Listing[] }) {
         const ds = num(l.deal_score)
         if (ds == null || ds <= 5) return false
       }
+      if (watchlistOnly && !watchlistIds.has(l.id)) return false
       return true
     })
     return [...rows].sort((a, b) => {
@@ -87,14 +131,16 @@ export default function DashboardClient({ listings }: { listings: Listing[] }) {
           return new Date(b.first_seen_at).getTime() - new Date(a.first_seen_at).getTime()
       }
     })
-  }, [listings, query, sources, types, dealsOnly, sort])
+  }, [listings, query, sources, types, dealsOnly, watchlistOnly, watchlistIds, sort])
 
-  const hasFilters = Boolean(query) || sources.size > 0 || types.size > 0 || dealsOnly || sort !== 'new'
+  const hasFilters =
+    Boolean(query) || sources.size > 0 || types.size > 0 || dealsOnly || watchlistOnly || sort !== 'new'
   const reset = () => {
     setQuery('')
     setSources(new Set())
     setTypes(new Set())
     setDealsOnly(false)
+    setWatchlistOnly(false)
     setSort('new')
   }
 
@@ -145,6 +191,18 @@ export default function DashboardClient({ listings }: { listings: Listing[] }) {
           >
             🔥 Deals
           </button>
+          {signedIn && (
+            <button
+              onClick={() => setWatchlistOnly((v) => !v)}
+              className={`px-3 py-1 rounded-full text-sm border font-medium transition-colors ${
+                watchlistOnly
+                  ? 'bg-yellow-500 border-yellow-400 text-black'
+                  : 'border-yellow-700 text-yellow-400 hover:border-yellow-500'
+              }`}
+            >
+              ★ Watchlist
+            </button>
+          )}
           {sourceOpts.map((src) => (
             <button key={src} onClick={() => setSources((s) => toggle(s, src))} className={chip(sources.has(src), 'orange')}>
               {SOURCE_LABELS[src] ?? src}
@@ -183,7 +241,12 @@ export default function DashboardClient({ listings }: { listings: Listing[] }) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map((l) => (
-            <InventoryCard key={l.id} listing={l} />
+            <InventoryCard
+              key={l.id}
+              listing={l}
+              isWatchlisted={signedIn ? watchlistIds.has(l.id) : undefined}
+              onToggleWatchlist={signedIn ? toggleWatchlistItem : undefined}
+            />
           ))}
         </div>
       )}
