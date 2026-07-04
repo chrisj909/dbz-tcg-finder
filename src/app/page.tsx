@@ -25,6 +25,17 @@ async function getListings(): Promise<Listing[]> {
   }
 }
 
+async function getWatchlistIds(userId: string | undefined): Promise<string[]> {
+  if (!userId) return []
+  try {
+    const rows = await sql`SELECT listing_id FROM watchlist_items WHERE user_id = ${userId}`
+    return rows.map((r) => r.listing_id as string)
+  } catch (error) {
+    console.error('Error fetching watchlist:', error)
+    return []
+  }
+}
+
 async function getStats() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -53,6 +64,7 @@ export default async function HomePage() {
     getStats(),
     auth.getSession(),
   ])
+  const watchlistIds = await getWatchlistIds(session?.user?.id)
 
   return (
     <div>
@@ -81,7 +93,11 @@ export default async function HomePage() {
           </p>
         </div>
       ) : (
-        <DashboardClient listings={listings} />
+        <DashboardClient
+          listings={listings}
+          signedIn={Boolean(session?.user)}
+          initialWatchlistIds={watchlistIds}
+        />
       )}
     </div>
   )
