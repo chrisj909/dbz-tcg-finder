@@ -2,8 +2,8 @@ import { sql } from '@/lib/db'
 import { Listing } from '@/lib/types'
 import StatsBar from '@/components/StatsBar'
 import DashboardClient from '@/components/DashboardClient'
+import SignOutButton from '@/components/SignOutButton'
 import { auth } from '@/lib/auth/server'
-import { signOutAction } from '@/app/actions/auth'
 
 // Always reflect the latest scan — a live finder shouldn't serve 5-min-stale data.
 export const dynamic = 'force-dynamic'
@@ -71,11 +71,7 @@ export default async function HomePage() {
       {session?.user && (
         <div className="flex items-center justify-end gap-3 text-sm text-gray-400 mb-4">
           <span>{session.user.email}</span>
-          <form action={signOutAction}>
-            <button type="submit" className="text-orange-400 hover:text-orange-300">
-              Sign out
-            </button>
-          </form>
+          <SignOutButton />
         </div>
       )}
       <StatsBar stats={stats} />

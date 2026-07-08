@@ -1,10 +1,19 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import { signInAction } from '@/app/actions/auth'
 
 export default function SignInPage() {
   const [state, formAction, isPending] = useActionState(signInAction, undefined)
+
+  // Hard-navigate on success (not router.push/redirect) so the dashboard gets
+  // a fresh full page load rather than a client-side RSC transition across
+  // the auth boundary — see the comment on signInAction for why.
+  useEffect(() => {
+    if (state && !state.error) {
+      window.location.href = '/'
+    }
+  }, [state])
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-950 text-gray-100 px-4">
