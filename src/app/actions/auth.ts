@@ -23,3 +23,17 @@ export async function signInAction(
 
   return { error: undefined }
 }
+
+export async function signUpAction(
+  _prevState: { error?: string } | undefined,
+  formData: FormData,
+) {
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const name = formData.get('name') as string
+
+  const { error } = await auth.signUp.email({ email, password, name })
+  if (error) return { error: error.message }
+
+  return { error: undefined }
+}
