@@ -1,13 +1,16 @@
 // Source registry. `browser: true` means the source drives Playwright (and for
 // FB/OfferUp will need a saved session). Add OfferUp/Facebook here as built.
+import { scrapeBestBuy } from './bestbuy.js'
 import { scrapeCraigslist } from './craigslist.js'
 import { scrapeEbay } from './ebay.js'
 import { scrapeFacebook } from './facebook.js'
+import { scrapeGamestop } from './gamestop.js'
 import { scrapeLocalShops } from './local-shops.js'
 import { scrapeMercari } from './mercari.js'
 import { scrapeOfferUp } from './offerup.js'
 import { scrapeTcgplayer } from './tcgplayer.js'
 import { scrapeTrollAndToad } from './trollandtoad.js'
+import { scrapeWalmart } from './walmart.js'
 
 export const sources = {
   // eBay first — the core sealed-product source (national inventory).
@@ -58,5 +61,23 @@ export const sources = {
     browser: true,
     needsLogin: false,
     run: scrapeLocalShops,
+  },
+  bestbuy: {
+    label: 'Best Buy (official Products API — needs BESTBUY_API_KEY)',
+    browser: false,
+    needsLogin: false,
+    run: scrapeBestBuy,
+  },
+  gamestop: {
+    label: 'GameStop (national — best-effort, Imperva bot protection)',
+    browser: true,
+    needsLogin: false,
+    run: scrapeGamestop,
+  },
+  walmart: {
+    label: 'Walmart (national — best-effort, Akamai + PerimeterX bot protection)',
+    browser: true,
+    needsLogin: false,
+    run: scrapeWalmart,
   },
 }

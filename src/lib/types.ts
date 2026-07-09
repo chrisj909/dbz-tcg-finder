@@ -8,6 +8,9 @@ export type Source =
   | 'local_shop'
   | 'tcgplayer'
   | 'trollandtoad'
+  | 'bestbuy'
+  | 'walmart'
+  | 'gamestop'
 export type Category = 'tcg_sealed' | 'merch'
 export type Era = 'score' | 'panini' | 'bandai_super'
 

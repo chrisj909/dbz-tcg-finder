@@ -25,6 +25,9 @@ const SOURCE_LABELS: Record<string, string> = {
   offerup: 'OfferUp',
   mercari: 'Mercari',
   trollandtoad: 'Troll & Toad',
+  bestbuy: 'Best Buy',
+  walmart: 'Walmart',
+  gamestop: 'GameStop',
 }
 const TYPE_LABELS: Record<string, string> = {
   booster_box: 'Booster Box',
