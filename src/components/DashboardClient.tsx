@@ -7,6 +7,7 @@
 import { useMemo, useState } from 'react'
 import { Listing } from '@/lib/types'
 import InventoryCard from './InventoryCard'
+import StatsBar from './StatsBar'
 
 const SORTS: { key: string; label: string }[] = [
   { key: 'new', label: 'Newest' },
@@ -38,10 +39,12 @@ const num = (v: unknown): number | null => (v == null ? null : Number(v))
 
 export default function DashboardClient({
   listings,
+  stats,
   signedIn = false,
   initialWatchlistIds = [],
 }: {
   listings: Listing[]
+  stats: { total: number; newToday: number; deals: number }
   signedIn?: boolean
   initialWatchlistIds?: string[]
 }) {
@@ -50,8 +53,18 @@ export default function DashboardClient({
   const [types, setTypes] = useState<Set<string>>(new Set())
   const [dealsOnly, setDealsOnly] = useState(false)
   const [watchlistOnly, setWatchlistOnly] = useState(false)
+  const [inStockOnly, setInStockOnly] = useState(false)
+  const [newOnly, setNewOnly] = useState(false)
   const [sort, setSort] = useState('new')
   const [watchlistIds, setWatchlistIds] = useState<Set<string>>(new Set(initialWatchlistIds))
+  // Date.now() is impure, so capture "start of today" once via a lazy
+  // initializer rather than reading it during render (same pattern as the
+  // NEW badge in InventoryCard).
+  const [todayStart] = useState(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d.getTime()
+  })
 
   const toggleWatchlistItem = (listingId: string) => {
     const isWatchlisted = watchlistIds.has(listingId)
@@ -115,6 +128,8 @@ export default function DashboardClient({
         if (ds == null || ds <= 5) return false
       }
       if (watchlistOnly && !watchlistIds.has(l.id)) return false
+      if (inStockOnly && !l.in_stock) return false
+      if (newOnly && new Date(l.first_seen_at).getTime() < todayStart) return false
       return true
     })
     return [...rows].sort((a, b) => {
@@ -131,16 +146,37 @@ export default function DashboardClient({
           return new Date(b.first_seen_at).getTime() - new Date(a.first_seen_at).getTime()
       }
     })
-  }, [listings, query, sources, types, dealsOnly, watchlistOnly, watchlistIds, sort])
+  }, [
+    listings,
+    query,
+    sources,
+    types,
+    dealsOnly,
+    watchlistOnly,
+    watchlistIds,
+    inStockOnly,
+    newOnly,
+    todayStart,
+    sort,
+  ])
 
   const hasFilters =
-    Boolean(query) || sources.size > 0 || types.size > 0 || dealsOnly || watchlistOnly || sort !== 'new'
+    Boolean(query) ||
+    sources.size > 0 ||
+    types.size > 0 ||
+    dealsOnly ||
+    watchlistOnly ||
+    inStockOnly ||
+    newOnly ||
+    sort !== 'new'
   const reset = () => {
     setQuery('')
     setSources(new Set())
     setTypes(new Set())
     setDealsOnly(false)
     setWatchlistOnly(false)
+    setInStockOnly(false)
+    setNewOnly(false)
     setSort('new')
   }
 
@@ -155,6 +191,16 @@ export default function DashboardClient({
 
   return (
     <div>
+      <StatsBar
+        stats={stats}
+        activeFilters={{ inStockOnly, newOnly, dealsOnly }}
+        onToggle={{
+          inStockOnly: () => setInStockOnly((v) => !v),
+          newOnly: () => setNewOnly((v) => !v),
+          dealsOnly: () => setDealsOnly((v) => !v),
+        }}
+      />
+
       <div className="mt-6 mb-6 space-y-3">
         {/* Search + sort */}
         <div className="flex gap-2 flex-wrap items-center">
