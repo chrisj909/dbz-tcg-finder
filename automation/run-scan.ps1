@@ -19,7 +19,16 @@ $log   = "automation\logs\scan-$stamp.log"
 
 # Run all scanner sources and tee output to console + log.
 # (no --source flag) runs every source; pass --source=ebay etc. to scope.
+#
+# $ErrorActionPreference is relaxed to 'Continue' just for this call: the scanner
+# writes non-fatal diagnostics (e.g. expired-session warnings) to stderr, and
+# under 'Stop' PowerShell's `2>&1` redirection wraps each stderr line as a
+# terminating NativeCommandError -- aborting the script (and reporting the whole
+# scan as failed in Task Scheduler) even when the scan itself completed cleanly.
+$ErrorActionPreference = 'Continue'
 node --env-file=.env.local scanner/run.js 2>&1 | Tee-Object -FilePath $log
+$exitCode = $LASTEXITCODE
+$ErrorActionPreference = 'Stop'
 
 # Pass the scanner's exit code through to Task Scheduler so a failed scan shows as failed.
-exit $LASTEXITCODE
+exit $exitCode
