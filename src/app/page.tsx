@@ -74,23 +74,25 @@ export default async function HomePage() {
           <SignOutButton />
         </div>
       )}
-      <StatsBar stats={stats} />
-
       {listings.length === 0 ? (
-        <div className="text-center py-20 text-gray-500">
-          <p className="text-5xl mb-4">🐉</p>
-          <p className="text-lg font-medium">No listings found yet.</p>
-          <p className="text-sm mt-2 text-gray-600">
-            Run the local scanner{' '}
-            <code className="bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-xs">
-              node --env-file=.env.local scanner/run.js
-            </code>{' '}
-            to populate listings.
-          </p>
-        </div>
+        <>
+          <StatsBar stats={stats} />
+          <div className="text-center py-20 text-gray-500">
+            <p className="text-5xl mb-4">🐉</p>
+            <p className="text-lg font-medium">No listings found yet.</p>
+            <p className="text-sm mt-2 text-gray-600">
+              Run the local scanner{' '}
+              <code className="bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-xs">
+                node --env-file=.env.local scanner/run.js
+              </code>{' '}
+              to populate listings.
+            </p>
+          </div>
+        </>
       ) : (
         <DashboardClient
           listings={listings}
+          stats={stats}
           signedIn={Boolean(session?.user)}
           initialWatchlistIds={watchlistIds}
         />
