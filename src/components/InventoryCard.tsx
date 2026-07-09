@@ -8,6 +8,9 @@ const SOURCE_STYLES: Record<string, string> = {
   craigslist: 'bg-purple-700 text-purple-100',
   offerup: 'bg-teal-700 text-teal-100',
   facebook: 'bg-sky-700 text-sky-100',
+  bestbuy: 'bg-indigo-700 text-indigo-100',
+  walmart: 'bg-blue-900 text-blue-100',
+  gamestop: 'bg-red-800 text-red-100',
 }
 
 const PRODUCT_TYPE_LABELS: Record<string, string> = {

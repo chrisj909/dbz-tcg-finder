@@ -1,0 +1,68 @@
+// Best Buy source — official public Products API (developer.bestbuy.com), not
+// a scrape. Free, self-serve API key required: sign up at
+// https://developer.bestbuy.com/, then add BESTBUY_API_KEY to .env.local.
+// Skips cleanly (no error) if the key isn't set, so a full scan still succeeds
+// without it.
+import { detectSetName, detectProductType } from '../lib/detect.js'
+
+const BASE = 'https://api.bestbuy.com/v1/products'
+
+// Best Buy's `(search=a&search=b)` syntax ANDs multi-word terms together.
+const QUERIES = [
+  '(search=Dragon Ball Super&search=trading card)',
+  '(search=Dragon Ball Z&search=trading card)',
+]
+
+const SHOW_FIELDS = 'sku,name,salePrice,image,url,onlineAvailability,inStoreAvailability'
+
+// Keep sealed boxes/cases/bundles; drop singles, figures, and other non-TCG
+// "Dragon Ball" merch the keyword search inevitably pulls in.
+const KEEP_TYPES = new Set(['booster_box', 'case', 'bundle'])
+
+export async function scrapeBestBuy() {
+  const apiKey = process.env.BESTBUY_API_KEY
+  if (!apiKey) {
+    console.log('[bestbuy] No BESTBUY_API_KEY set — sign up free at https://developer.bestbuy.com/ to enable this source. Skipping.')
+    return []
+  }
+
+  const listings = []
+  const seen = new Set()
+
+  for (const query of QUERIES) {
+    const url = `${BASE}${encodeURIComponent(query)}?format=json&show=${SHOW_FIELDS}&pageSize=100&apiKey=${apiKey}`
+    try {
+      const res = await fetch(url)
+      if (!res.ok) {
+        console.error(`[bestbuy] query failed: ${res.status} ${res.statusText}`)
+        continue
+      }
+      const data = await res.json()
+      for (const prod of data.products ?? []) {
+        if (seen.has(String(prod.sku))) continue
+        const productType = detectProductType(prod.name || '')
+        if (!KEEP_TYPES.has(productType)) continue
+        seen.add(String(prod.sku))
+
+        listings.push({
+          source: 'bestbuy',
+          external_id: String(prod.sku),
+          title: prod.name,
+          url: prod.url,
+          price: prod.salePrice ?? null,
+          currency: 'USD',
+          in_stock: Boolean(prod.onlineAvailability || prod.inStoreAvailability),
+          image_url: prod.image,
+          seller: 'Best Buy',
+          set_name: detectSetName(prod.name || ''),
+          product_type: productType,
+        })
+      }
+    } catch (err) {
+      console.error(`[bestbuy] query "${query}" failed: ${err.message}`)
+    }
+  }
+
+  console.log(`[bestbuy] ${listings.length} listing(s) found`)
+  return listings
+}
