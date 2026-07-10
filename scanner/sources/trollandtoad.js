@@ -7,7 +7,7 @@
 // out-of-stock — we still record the catalog + prices (in_stock reflects
 // availability), so boxes auto-surface the moment they restock.
 import { chromium } from 'playwright'
-import { detectSetName, detectProductType } from '../lib/detect.js'
+import { detectSetName, detectProductType, isDragonBallTitle } from '../lib/detect.js'
 
 const COLLECTION = 'dragon-ball-super-sealed-product'
 const COLLECTION_URL = `https://www.trollandtoad.com/collections/${COLLECTION}`
@@ -51,7 +51,11 @@ export async function scrapeTrollAndToad({ headless = true } = {}) {
     }, COLLECTION)
 
     for (const prod of products) {
-      const productType = detectProductType(prod.title || '')
+      const title = prod.title || ''
+      // The collection is franchise-scoped by URL, but don't trust that
+      // alone — a mis-tagged item could still land in it.
+      if (!isDragonBallTitle(title)) continue
+      const productType = detectProductType(title)
       if (!KEEP_TYPES.has(productType)) continue // boxes/cases only
 
       const variants = Array.isArray(prod.variants) ? prod.variants : []
@@ -59,14 +63,14 @@ export async function scrapeTrollAndToad({ headless = true } = {}) {
       listings.push({
         source: 'trollandtoad',
         external_id: String(prod.id),
-        title: prod.title,
+        title,
         url: `https://www.trollandtoad.com/products/${prod.handle}`,
         price: priceStr != null ? Number(priceStr) : null,
         currency: 'USD',
         in_stock: variants.some((v) => v.available),
         image_url: prod.images?.[0]?.src,
         seller: 'Troll & Toad',
-        set_name: detectSetName(prod.title || ''),
+        set_name: detectSetName(title),
         product_type: productType,
       })
     }

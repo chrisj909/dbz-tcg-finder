@@ -3,7 +3,7 @@
 // https://developer.bestbuy.com/, then add BESTBUY_API_KEY to .env.local.
 // Skips cleanly (no error) if the key isn't set, so a full scan still succeeds
 // without it.
-import { detectSetName, detectProductType } from '../lib/detect.js'
+import { detectSetName, detectProductType, isDragonBallTitle } from '../lib/detect.js'
 
 const BASE = 'https://api.bestbuy.com/v1/products'
 
@@ -40,21 +40,26 @@ export async function scrapeBestBuy() {
       const data = await res.json()
       for (const prod of data.products ?? []) {
         if (seen.has(String(prod.sku))) continue
-        const productType = detectProductType(prod.name || '')
+        const title = prod.name || ''
+        // Best Buy's search ANDs "Dragon Ball" with "trading card", but
+        // don't rely on that alone — verify the returned title actually
+        // mentions Dragon Ball before keeping it.
+        if (!isDragonBallTitle(title)) continue
+        const productType = detectProductType(title)
         if (!KEEP_TYPES.has(productType)) continue
         seen.add(String(prod.sku))
 
         listings.push({
           source: 'bestbuy',
           external_id: String(prod.sku),
-          title: prod.name,
+          title,
           url: prod.url,
           price: prod.salePrice ?? null,
           currency: 'USD',
           in_stock: Boolean(prod.onlineAvailability || prod.inStoreAvailability),
           image_url: prod.image,
           seller: 'Best Buy',
-          set_name: detectSetName(prod.name || ''),
+          set_name: detectSetName(title),
           product_type: productType,
         })
       }

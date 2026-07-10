@@ -11,6 +11,7 @@ const SOURCE_STYLES: Record<string, string> = {
   bestbuy: 'bg-indigo-700 text-indigo-100',
   walmart: 'bg-blue-900 text-blue-100',
   gamestop: 'bg-red-800 text-red-100',
+  topcutcomics: 'bg-rose-700 text-rose-100',
 }
 
 const PRODUCT_TYPE_LABELS: Record<string, string> = {

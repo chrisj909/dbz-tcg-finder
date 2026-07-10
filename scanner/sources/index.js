@@ -9,6 +9,7 @@ import { scrapeLocalShops } from './local-shops.js'
 import { scrapeMercari } from './mercari.js'
 import { scrapeOfferUp } from './offerup.js'
 import { scrapeTcgplayer } from './tcgplayer.js'
+import { scrapeTopCutComics } from './topcutcomics.js'
 import { scrapeTrollAndToad } from './trollandtoad.js'
 import { scrapeWalmart } from './walmart.js'
 
@@ -79,5 +80,11 @@ export const sources = {
     browser: true,
     needsLogin: false,
     run: scrapeWalmart,
+  },
+  topcutcomics: {
+    label: 'Top Cut Comics (Shopify)',
+    browser: true,
+    needsLogin: false,
+    run: scrapeTopCutComics,
   },
 }

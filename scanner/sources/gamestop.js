@@ -7,7 +7,7 @@
 // data (id, name, price, availability, image) — no need to parse rendered text.
 import { chromium } from 'playwright-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
-import { detectSetName, detectProductType } from '../lib/detect.js'
+import { detectSetName, detectProductType, isDragonBallTitle } from '../lib/detect.js'
 
 chromium.use(StealthPlugin())
 
@@ -61,6 +61,10 @@ export async function scrapeGamestop({ headless = true } = {}) {
     for (const prod of products) {
       if (seen.has(String(prod.id))) continue
       const title = prod.name || ''
+      // GameStop's "franchise=Dragon Ball" facet isn't fully reliable — real
+      // Pokemon products have shown up on this exact category page. Never
+      // trust the source's own scoping alone.
+      if (!isDragonBallTitle(title)) continue
       const productType = detectProductType(title)
       if (!KEEP_TYPES.has(productType)) continue
       seen.add(String(prod.id))

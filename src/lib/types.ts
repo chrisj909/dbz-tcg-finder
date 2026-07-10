@@ -11,6 +11,7 @@ export type Source =
   | 'bestbuy'
   | 'walmart'
   | 'gamestop'
+  | 'topcutcomics'
 export type Category = 'tcg_sealed' | 'merch'
 export type Era = 'score' | 'panini' | 'bandai_super'
 

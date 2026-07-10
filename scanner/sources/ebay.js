@@ -83,7 +83,12 @@ export async function scrapeEbay({ headless = true } = {}) {
           if (!id || seen.has(id)) continue
           if (!title || /^shop on ebay$/i.test(title)) continue
           const lower = title.toLowerCase()
-          if (!lower.includes('dragon ball') && !lower.includes('dbs') && !lower.includes('dbz'))
+          if (
+            !lower.includes('dragon ball') &&
+            !lower.includes('dragonball') &&
+            !lower.includes('dbs') &&
+            !lower.includes('dbz')
+          )
             continue
           if (!SEALED_RE.test(title) || EXCLUDE_RE.test(title)) continue
 
