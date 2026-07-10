@@ -62,7 +62,17 @@ export async function scrapeWalmart({ headless = true } = {}) {
         local.add(href)
         // Price + image often live in a sibling/ancestor tile, not inside the
         // link itself — read the whole tile's text, not just the anchor's.
-        const tile = a.closest('[data-item-id], li, div[role="group"], article') || a.parentElement
+        // [itemid] checked first: it's Walmart's own per-product boundary
+        // marker (confirmed present on the anchor's immediate parent) and the
+        // tightest guarantee this tile can't bleed a neighboring product's
+        // price/text in. The looser selectors after it are a fallback only —
+        // if Walmart's DOM ever wraps tiles in a shared <li>/<article> above
+        // the [itemid] div, .closest() would climb past the correct boundary
+        // into a container spanning multiple products (see the TCGplayer
+        // cross-listing price bug this pattern is modeled after — same class
+        // of "aggregate a container that isn't actually one product" risk).
+        const tile =
+          a.closest('[itemid], [data-item-id], li, div[role="group"], article') || a.parentElement
         const lines = (tile?.innerText || a.innerText || '').split('\n').map((s) => s.trim()).filter(Boolean)
         const img = tile?.querySelector('img') || a.querySelector('img')
         out.push({ href, lines, img: img?.currentSrc || img?.src })
