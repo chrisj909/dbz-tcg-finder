@@ -65,6 +65,24 @@ export function detectCategory(title = '') {
   return SEALED_HINTS.some((h) => t.includes(h)) ? 'tcg_sealed' : 'merch'
 }
 
+// Some marketplaces show an aggregate "N listings from $X" / "as low as $X"
+// price pooled across EVERY seller attached to a product — including sellers
+// whose listing doesn't actually match what the product nominally is (a
+// different printing, language, or condition). Confirmed via a real incident:
+// TCGplayer sellers list cheap Japanese-import copies under the same product
+// ID as the English box, and the category grid's "from" price pools them in —
+// scraping that verbatim understated real boxes by 3-6x. Never trust a
+// pooled/aggregate price at face value if a second, per-product reference
+// price is available in the same scrape (e.g. the marketplace's own "Market
+// Price"). A "from" price implausibly far below that reference is a strong
+// signal of exactly this kind of pollution, not a real deal.
+export function pickReliablePrice(fromPrice, referencePrice, { maxDiscountRatio = 0.3 } = {}) {
+  if (referencePrice != null && fromPrice != null && fromPrice < referencePrice * maxDiscountRatio) {
+    return referencePrice
+  }
+  return fromPrice
+}
+
 export function parsePrice(text) {
   if (text == null) return undefined
   const m = String(text).replace(/,/g, '').match(/(\d+(?:\.\d{1,2})?)/)

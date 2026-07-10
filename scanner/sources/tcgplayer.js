@@ -1,12 +1,15 @@
 // TCGplayer source — the major TCG marketplace. Scrapes the Dragon Ball Super
 // Fusion World "Sealed Products" category (renders fine headless). Each product
 // card: a[href*="/product/"] (id), innerText "Set | rarity | Name | N listings
-// from | $lowestPrice". We keep boxes/cases/booster packs (drop tournament/promo
-// packs, which aren't real retail product) and record the lowest available
-// ("from") price. Per-product Market Price is
+// from | $lowestPrice | Market Price:$Y". We keep boxes/cases/booster packs
+// (drop tournament/promo packs, which aren't real retail product) and record
+// the lowest available ("from") price — sanity-checked against the tile's own
+// Market Price via pickReliablePrice() (lib/detect.js) so a mismatched-
+// language/condition listing pooled into the "from" price doesn't silently
+// tank it. Per-product Market Price is also
 // captured separately by market-tcgplayer.js -> market_values(source='tcgplayer').
 import { chromium } from 'playwright'
-import { detectSetName, detectProductType, parsePrice } from '../lib/detect.js'
+import { detectSetName, detectProductType, parsePrice, pickReliablePrice } from '../lib/detect.js'
 
 const BASE =
   'https://www.tcgplayer.com/search/dragon-ball-super-fusion-world/product?productLineName=dragon-ball-super-fusion-world&view=grid&ProductTypeName=Sealed+Products'
@@ -79,22 +82,12 @@ export async function scrapeTcgplayer({ headless = true } = {}) {
           // avoid MISLABELING: no longer force-prepending "Dragon Ball Super"
           // to a title that doesn't already say so (see git history).
 
-          // The tile's "N listings from $X" price is pooled across every
-          // seller for that product ID — including mislabeled cheap
-          // Japanese-import copies TCGplayer lets sellers list under the
-          // same (nominally English) product (confirmed by inspecting a
-          // product page directly: listings explicitly marked "[JAPANESE]"
-          // sitting well below the English going rate). A "from" price far
-          // below the tile's own Market Price is almost always one of these,
-          // not a real deal — fall back to Market Price, which reflects the
-          // actual expected-printing going rate and isn't skewed by a single
-          // mismatched listing.
-          const fromPrice = parsePrice(priceLine)
-          const marketPrice = parsePrice(marketPriceLine)
-          const price =
-            marketPrice != null && fromPrice != null && fromPrice < marketPrice * 0.3
-              ? marketPrice
-              : fromPrice
+          // See pickReliablePrice() in lib/detect.js — the tile's "N listings
+          // from $X" price is pooled across every seller for that product ID,
+          // including mislabeled cheap Japanese-import copies TCGplayer lets
+          // sellers list under the same (nominally English) product (this is
+          // the incident that motivated the shared helper — see its comment).
+          const price = pickReliablePrice(parsePrice(priceLine), parsePrice(marketPriceLine))
 
           seen.add(it.id)
           const title = name
