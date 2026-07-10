@@ -5,7 +5,7 @@
 //   ... --headed                                         # show the browser
 //
 // Or from the repo root: node --env-file=.env.local scanner/run.js
-import { getSql, startScanRun, finishScanRun, upsertListing } from './lib/db.js'
+import { getSql, startScanRun, finishScanRun, upsertListing, deactivateStaleListings } from './lib/db.js'
 import { sources } from './sources/index.js'
 import { scoreDeals } from './deal-score.js'
 import { checkSessions, printSessionWarnings } from './lib/session-health.js'
@@ -63,6 +63,16 @@ await finishScanRun(sql, scanId, {
   errors,
   status,
 })
+
+// Retire listings no source has confirmed in a while — otherwise a delisted/
+// sold item just sits there forever showing its last (possibly stale, wildly
+// off) price and "in stock" status.
+try {
+  const retired = await deactivateStaleListings(sql)
+  if (retired) console.log(`[stale] deactivated ${retired} listing(s) not seen in 7+ days`)
+} catch (err) {
+  console.error('[stale] deactivation failed:', err.message)
+}
 
 // Re-score deals against the latest market values after every scan.
 try {

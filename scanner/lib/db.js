@@ -104,3 +104,18 @@ export async function upsertListing(sql, l) {
   `
   return 'seen'
 }
+
+// Nothing above ever sets is_active back to false — a listing a source stops
+// surfacing (sold, delisted, or just didn't rank on a fragile single-query
+// source like Walmart) lingers forever with its last-known (possibly stale/
+// wrong) price. Sweep for staleness instead of diffing each run's results
+// against the previous active set — safer for sources like Walmart that only
+// run one query and can legitimately miss a still-live item on any given run.
+export async function deactivateStaleListings(sql, days = 7) {
+  const rows = await sql`
+    UPDATE listings SET is_active = false, updated_at = NOW()
+    WHERE is_active = true AND last_seen_at < NOW() - (${days} || ' days')::interval
+    RETURNING id
+  `
+  return rows.length
+}
