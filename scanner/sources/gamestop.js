@@ -82,6 +82,11 @@ export async function scrapeGamestop({ headless = true } = {}) {
         seller: 'GameStop',
         set_name: detectSetName(title),
         product_type: productType,
+        // GameStop exposes a real structured pre-order field (confirmed live:
+        // availability.preorder is boolean/null, alongside a releaseDate for
+        // genuine pre-orders) — trust it over the title-regex fallback other
+        // sources rely on.
+        is_preorder: Boolean(prod.availability?.preorder),
       })
     }
 

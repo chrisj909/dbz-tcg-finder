@@ -45,6 +45,15 @@ export function isDragonBallTitle(title = '') {
   )
 }
 
+// Title-text fallback for sources with no structured pre-order field (see
+// gamestop.js for a structured example — availability.preorder). Deliberately
+// narrow: a bare "PO" is much too common a false-positive risk (abbreviations,
+// noise), so only match clearly-intentional pre-order markers seen in real
+// listing titles, e.g. "...FB-11 ENG PREORDER" or "[PO.Dec] ...".
+export function detectPreorder(title = '') {
+  return /\bpre-?order(ed)?\b/i.test(title) || /\[po[.\]]/i.test(title)
+}
+
 export function detectProductType(title = '') {
   const t = title.toLowerCase()
   // Check case before booster_box: "Booster Box Case" is a case (of boxes), not a box.

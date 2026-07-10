@@ -103,6 +103,11 @@ export default function InventoryCard({
                 NEW
               </span>
             )}
+            {listing.is_preorder && (
+              <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded font-medium">
+                PRE-ORDER
+              </span>
+            )}
             {hasPriceDrop && (
               <span className="text-xs bg-green-700 text-green-100 px-1.5 py-0.5 rounded font-medium">
                 PRICE DROP

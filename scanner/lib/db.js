@@ -2,6 +2,13 @@
 // Mirrors the upsert in src/app/api/cron/scan/route.ts so the web cron and the
 // local scanner produce identical rows.
 import { neon } from '@neondatabase/serverless'
+import { detectPreorder } from './detect.js'
+
+// A source can pass an explicit l.is_preorder (e.g. gamestop.js reads a real
+// structured availability.preorder field) — that takes precedence. Otherwise
+// fall back to the shared title-regex heuristic so every source benefits
+// without each one needing its own detection logic.
+const resolvePreorder = (l) => l.is_preorder ?? detectPreorder(l.title ?? '')
 
 export function getSql() {
   const url = process.env.DATABASE_URL
@@ -48,14 +55,14 @@ export async function upsertListing(sql, l) {
       INSERT INTO listings (
         source, external_id, title, url, price, currency, in_stock,
         quantity_available, product_type, set_name, condition, image_url, image_data, seller,
-        city, distance_mi,
+        city, distance_mi, is_preorder,
         first_seen_at, last_seen_at, is_active
       ) VALUES (
         ${l.source}, ${l.external_id}, ${l.title ?? null}, ${l.url ?? null},
         ${l.price ?? null}, ${l.currency ?? 'USD'}, ${l.in_stock ?? true},
         ${l.quantity_available ?? null}, ${l.product_type ?? null}, ${l.set_name ?? null},
         ${l.condition ?? null}, ${l.image_url ?? null}, ${l.image_data ?? null}, ${l.seller ?? null},
-        ${l.city ?? null}, ${l.distance_mi ?? null},
+        ${l.city ?? null}, ${l.distance_mi ?? null}, ${resolvePreorder(l)},
         NOW(), NOW(), true
       )
     `
@@ -81,7 +88,8 @@ export async function upsertListing(sql, l) {
         product_type = COALESCE(${l.product_type ?? null}, product_type),
         seller = COALESCE(${l.seller ?? null}, seller),
         city = COALESCE(${l.city ?? null}, city),
-        distance_mi = COALESCE(${l.distance_mi ?? null}, distance_mi)
+        distance_mi = COALESCE(${l.distance_mi ?? null}, distance_mi),
+        is_preorder = ${resolvePreorder(l)}
       WHERE id = ${row.id}
     `
     return 'price_change'
@@ -99,7 +107,8 @@ export async function upsertListing(sql, l) {
       product_type = COALESCE(${l.product_type ?? null}, product_type),
       seller = COALESCE(${l.seller ?? null}, seller),
       city = COALESCE(${l.city ?? null}, city),
-      distance_mi = COALESCE(${l.distance_mi ?? null}, distance_mi)
+      distance_mi = COALESCE(${l.distance_mi ?? null}, distance_mi),
+      is_preorder = ${resolvePreorder(l)}
     WHERE id = ${row.id}
   `
   return 'seen'
