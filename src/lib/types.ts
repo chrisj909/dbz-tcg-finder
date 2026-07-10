@@ -43,6 +43,7 @@ export interface Listing {
   deal_reason?: string
   city?: string
   distance_mi?: number
+  is_preorder: boolean
   is_active: boolean
   created_at: string
   updated_at: string

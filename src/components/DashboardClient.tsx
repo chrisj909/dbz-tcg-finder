@@ -59,6 +59,7 @@ export default function DashboardClient({
   const [sources, setSources] = useState<Set<string>>(new Set())
   const [types, setTypes] = useState<Set<string>>(new Set())
   const [dealsOnly, setDealsOnly] = useState(false)
+  const [preorderOnly, setPreorderOnly] = useState(false)
   const [watchlistOnly, setWatchlistOnly] = useState(false)
   // Default to hiding sold-out/out-of-stock items — a "deal" that's out of
   // stock isn't actionable. Users can still toggle the "Active listings in
@@ -137,6 +138,7 @@ export default function DashboardClient({
         if (ds == null || ds <= 5) return false
       }
       if (watchlistOnly && !watchlistIds.has(l.id)) return false
+      if (preorderOnly && !l.is_preorder) return false
       if (inStockOnly && !l.in_stock) return false
       if (newOnly && new Date(l.first_seen_at).getTime() < todayStart) return false
       return true
@@ -162,6 +164,7 @@ export default function DashboardClient({
     types,
     dealsOnly,
     watchlistOnly,
+    preorderOnly,
     watchlistIds,
     inStockOnly,
     newOnly,
@@ -175,6 +178,7 @@ export default function DashboardClient({
     types.size > 0 ||
     dealsOnly ||
     watchlistOnly ||
+    preorderOnly ||
     !inStockOnly ||
     newOnly ||
     sort !== 'new'
@@ -184,6 +188,7 @@ export default function DashboardClient({
     setTypes(new Set())
     setDealsOnly(false)
     setWatchlistOnly(false)
+    setPreorderOnly(false)
     setInStockOnly(true)
     setNewOnly(false)
     setSort('new')
@@ -245,6 +250,16 @@ export default function DashboardClient({
             }`}
           >
             🔥 Deals
+          </button>
+          <button
+            onClick={() => setPreorderOnly((v) => !v)}
+            className={`px-3 py-1 rounded-full text-sm border font-medium transition-colors ${
+              preorderOnly
+                ? 'bg-blue-500 border-blue-400 text-black'
+                : 'border-blue-700 text-blue-400 hover:border-blue-500'
+            }`}
+          >
+            📦 Pre-Order
           </button>
           {signedIn && (
             <button

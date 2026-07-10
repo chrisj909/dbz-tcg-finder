@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         in_stock, quantity_available, image_url,
         (image_data IS NOT NULL) AS has_stored_image,
         seller, set_name, product_type, category, era,
-        market_value, deal_score, deal_reason, city, distance_mi,
+        market_value, deal_score, deal_reason, city, distance_mi, is_preorder,
         first_seen_at, last_seen_at, last_price_change_at, previous_price,
         is_active, created_at, updated_at
       FROM listings
