@@ -28,6 +28,7 @@ const SOURCE_LABELS: Record<string, string> = {
   bestbuy: 'Best Buy',
   walmart: 'Walmart',
   gamestop: 'GameStop',
+  topcutcomics: 'Top Cut Comics',
 }
 const TYPE_LABELS: Record<string, string> = {
   booster_box: 'Booster Box',

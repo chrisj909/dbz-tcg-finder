@@ -29,6 +29,22 @@ export function detectEra(title = '') {
   return undefined
 }
 
+// Sanity check: does this title actually mention Dragon Ball? Sources that
+// rely on a marketplace's own category/franchise filter or search scoping
+// (e.g. GameStop's "franchise=Dragon Ball" facet, TCGplayer's product-line
+// URL) have been observed leaking unrelated product (Pokemon showed up in
+// GameStop's "Dragon Ball" category) — never trust that filtering alone.
+// Call this on every scraped title before keeping the listing.
+export function isDragonBallTitle(title = '') {
+  const t = title.toLowerCase()
+  return (
+    t.includes('dragon ball') ||
+    t.includes('dragonball') ||
+    /\bdbz\b/.test(t) ||
+    /\bdbs\b/.test(t)
+  )
+}
+
 export function detectProductType(title = '') {
   const t = title.toLowerCase()
   // Check case before booster_box: "Booster Box Case" is a case (of boxes), not a box.

@@ -8,7 +8,7 @@
 import { chromium } from 'playwright'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { detectSetName, detectProductType, parsePrice } from '../lib/detect.js'
+import { detectSetName, detectProductType, isDragonBallTitle, parsePrice } from '../lib/detect.js'
 
 const SESSION_PATH = fileURLToPath(new URL('../.auth/offerup.json', import.meta.url))
 
@@ -94,6 +94,7 @@ export async function scrapeOfferUp({ headless = true } = {}) {
           if (!it.href || seen.has(it.href)) continue
           if (!it.title) continue
           if (NOISE_RE.test(it.title)) continue
+          if (!isDragonBallTitle(it.title)) continue
           seen.add(it.href)
 
           // Extract UUID from href for a stable external_id

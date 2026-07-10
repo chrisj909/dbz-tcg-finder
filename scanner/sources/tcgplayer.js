@@ -66,9 +66,17 @@ export async function scrapeTcgplayer({ headless = true } = {}) {
             it.lines[0]
           const productType = detectProductType(name)
           if (!KEEP_TYPES.has(productType)) continue // drop single/tournament packs
+          // Unlike other sources, TCGplayer's card text never mentions "Dragon
+          // Ball" at all (just the set name, e.g. "Cross Force") — there's no
+          // franchise text here to sanity-check against. Trust the URL's
+          // productLineName scoping instead; it's a specific, TCGplayer-
+          // internal product-line filter (not a loosely-enforced facet like
+          // GameStop's, which is where a real leak was found). We do still
+          // avoid MISLABELING: no longer force-prepending "Dragon Ball Super"
+          // to a title that doesn't already say so (see git history).
 
           seen.add(it.id)
-          const title = /dragon ball/i.test(name) ? name : `Dragon Ball Super ${name}`
+          const title = name
           listings.push({
             source: 'tcgplayer',
             external_id: it.id,
