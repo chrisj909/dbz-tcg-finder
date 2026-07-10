@@ -18,8 +18,8 @@ const UA =
 const CATEGORY_URL =
   'https://www.gamestop.com/toys-games/trading-cards/trading-card-games?prefn1=franchise&prefv1=Dragon+Ball'
 
-// Keep sealed boxes/cases/bundles; drop the (more common here) single packs and starter decks.
-const KEEP_TYPES = new Set(['booster_box', 'case', 'bundle'])
+// Keep sealed boxes/cases/bundles/booster packs; drop starter decks and singles.
+const KEEP_TYPES = new Set(['booster_box', 'booster_pack', 'case', 'bundle'])
 
 export async function scrapeGamestop({ headless = true } = {}) {
   const browser = await chromium.launch({ headless })

@@ -15,8 +15,8 @@ const COLLECTION_URL = `https://www.trollandtoad.com/collections/${COLLECTION}`
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
 
-// Keep sealed boxes/cases/bundles; drop single + premium packs (low-value noise).
-const KEEP_TYPES = new Set(['booster_box', 'case', 'bundle'])
+// Keep sealed boxes/cases/bundles/booster packs; drop singles and non-sealed items.
+const KEEP_TYPES = new Set(['booster_box', 'booster_pack', 'case', 'bundle'])
 
 export async function scrapeTrollAndToad({ headless = true } = {}) {
   const browser = await chromium.launch({
@@ -56,7 +56,7 @@ export async function scrapeTrollAndToad({ headless = true } = {}) {
       // alone — a mis-tagged item could still land in it.
       if (!isDragonBallTitle(title)) continue
       const productType = detectProductType(title)
-      if (!KEEP_TYPES.has(productType)) continue // boxes/cases only
+      if (!KEEP_TYPES.has(productType)) continue
 
       const variants = Array.isArray(prod.variants) ? prod.variants : []
       const priceStr = variants[0]?.price

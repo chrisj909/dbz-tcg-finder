@@ -2,8 +2,10 @@
 
 // Interactive dashboard (#12). The server fetches all active listings once;
 // everything below — search, multi-facet filters, sort — runs client-side for
-// instant feedback (no page reloads). Filters are combinable; chips reflect the
-// facets actually present in the data.
+// instant feedback (no page reloads). Filters are combinable. Source chips
+// always list every registered source (so users can see the full monitoring
+// breadth, even ones with 0 active listings); type chips still reflect only
+// the product types actually present in the data.
 import { useMemo, useState } from 'react'
 import { Listing } from '@/lib/types'
 import InventoryCard from './InventoryCard'
@@ -30,6 +32,7 @@ const SOURCE_LABELS: Record<string, string> = {
   gamestop: 'GameStop',
   topcutcomics: 'Top Cut Comics',
 }
+const SOURCE_OPTS = Object.keys(SOURCE_LABELS).sort()
 const TYPE_LABELS: Record<string, string> = {
   booster_box: 'Booster Box',
   case: 'Case',
@@ -103,11 +106,10 @@ export default function DashboardClient({
       })
   }
 
-  // Facets present in the data, so chips only show what actually exists.
-  const sourceOpts = useMemo(
-    () => Array.from(new Set(listings.map((l) => l.source))).sort(),
-    [listings],
-  )
+  // Always show every registered source, even ones with 0 active listings right
+  // now — so the chip row communicates the full breadth of what's monitored,
+  // and clicking an empty one confirms it's tracked rather than missing.
+  const sourceOpts = SOURCE_OPTS
   const typeOpts = useMemo(() => {
     const s = new Set<string>()
     for (const l of listings) if (l.product_type) s.add(l.product_type)

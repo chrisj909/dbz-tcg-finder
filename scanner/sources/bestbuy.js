@@ -17,7 +17,7 @@ const SHOW_FIELDS = 'sku,name,salePrice,image,url,onlineAvailability,inStoreAvai
 
 // Keep sealed boxes/cases/bundles; drop singles, figures, and other non-TCG
 // "Dragon Ball" merch the keyword search inevitably pulls in.
-const KEEP_TYPES = new Set(['booster_box', 'case', 'bundle'])
+const KEEP_TYPES = new Set(['booster_box', 'booster_pack', 'case', 'bundle'])
 
 export async function scrapeBestBuy() {
   const apiKey = process.env.BESTBUY_API_KEY
