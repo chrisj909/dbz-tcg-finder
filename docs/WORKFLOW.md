@@ -25,7 +25,7 @@ The original Phase 0–7 plan is essentially delivered; ongoing work is tracked 
 - [x] **Phase 4 — Data model** — migration `002` (category, era, location, `market_value`, `deal_score`; `market_values`, `price_history` tables).
 - [~] **Phase 5 — Dashboard** — Deals view + deal badges + market-value ✅; client-side search/filters/sort ✅ (#12); per-user watchlists open (#14, needs auth) + durable images (#35).
 - [ ] **Phase 6 — Neon Auth** + multi-channel alerts (#15/#26).
-- [x] **Phase 7 — Deployed** to Vercel (`dbz-tcg-finder.vercel.app`). Cleanup of the dead cron is #30.
+- [x] **Phase 7 — Deployed** to Vercel, live at `dbz-finder.progrowthtech.com` (canonical URL). Cleanup of the dead cron is #30.
 
 ## Backlog model
 

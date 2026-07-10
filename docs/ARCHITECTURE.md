@@ -8,7 +8,9 @@ marketplaces, values it against **eBay-SOLD** medians, and surfaces **underprice
 
 One **Neon Postgres** DB, written by the scanner and read by the web app:
 
-1. **Cloud web app** (Vercel) — the dashboard + read APIs. Live at `dbz-tcg-finder.vercel.app`. No browser, always-on.
+1. **Cloud web app** (Vercel) — the dashboard + read APIs. Live at `dbz-finder.progrowthtech.com` (canonical — use this,
+   not the `dbz-tcg-finder*.vercel.app` deployment URLs, which change per-deployment and aren't meant for humans/links).
+   No browser, always-on.
    (The old Vercel cron was **retired** (#30): `/api/cron/scan` is now a no-op and the legacy `src/lib/scrapers` were
    deleted — the local scanner is the only ingester.)
 2. **Local scanner** (`scanner/`, Chris's Windows PC) — a Node package that runs **every** marketplace source via
