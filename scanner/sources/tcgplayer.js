@@ -63,6 +63,7 @@ export async function scrapeTcgplayer({ headless = true } = {}) {
         for (const it of items) {
           if (seen.has(it.id) || !it.lines.length) continue
           const priceLine = it.lines.find((l) => /^\$[\d,]/.test(l))
+          const marketPriceLine = it.lines.find((l) => /^Market Price:/i.test(l))
           const name =
             it.lines.find((l) => /\bbox\b|\bcase\b|\bpack\b|display|bundle/i.test(l)) ||
             it.lines[2] ||
@@ -78,6 +79,23 @@ export async function scrapeTcgplayer({ headless = true } = {}) {
           // avoid MISLABELING: no longer force-prepending "Dragon Ball Super"
           // to a title that doesn't already say so (see git history).
 
+          // The tile's "N listings from $X" price is pooled across every
+          // seller for that product ID — including mislabeled cheap
+          // Japanese-import copies TCGplayer lets sellers list under the
+          // same (nominally English) product (confirmed by inspecting a
+          // product page directly: listings explicitly marked "[JAPANESE]"
+          // sitting well below the English going rate). A "from" price far
+          // below the tile's own Market Price is almost always one of these,
+          // not a real deal — fall back to Market Price, which reflects the
+          // actual expected-printing going rate and isn't skewed by a single
+          // mismatched listing.
+          const fromPrice = parsePrice(priceLine)
+          const marketPrice = parsePrice(marketPriceLine)
+          const price =
+            marketPrice != null && fromPrice != null && fromPrice < marketPrice * 0.3
+              ? marketPrice
+              : fromPrice
+
           seen.add(it.id)
           const title = name
           listings.push({
@@ -85,7 +103,7 @@ export async function scrapeTcgplayer({ headless = true } = {}) {
             external_id: it.id,
             title,
             url: `https://www.tcgplayer.com/product/${it.id}/`,
-            price: parsePrice(priceLine),
+            price,
             currency: 'USD',
             in_stock: true,
             image_url: it.img,
