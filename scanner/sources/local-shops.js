@@ -35,8 +35,8 @@ const SHOPS = [
   },
 ]
 
-// KEEP_TYPES mirrors the TCGplayer source — booster boxes + cases only.
-const KEEP_TYPES = new Set(['booster_box', 'case', 'bundle'])
+// KEEP_TYPES mirrors the TCGplayer source — boxes/cases/bundles/booster packs.
+const KEEP_TYPES = new Set(['booster_box', 'booster_pack', 'case', 'bundle'])
 
 export async function scrapeLocalShops({ headless = true } = {}) {
   const sql = getSql()
@@ -48,7 +48,7 @@ export async function scrapeLocalShops({ headless = true } = {}) {
     SELECT external_id, title, set_name, product_type
     FROM listings
     WHERE source = 'tcgplayer' AND is_active = true
-      AND product_type IN ('booster_box', 'case', 'bundle')
+      AND product_type IN ('booster_box', 'booster_pack', 'case', 'bundle')
   `
   if (!knownProducts.length) {
     console.log('[local-shops] No TCGplayer product IDs in DB — run tcgplayer source scan first.')

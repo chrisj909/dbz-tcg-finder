@@ -1,8 +1,9 @@
 // TCGplayer source — the major TCG marketplace. Scrapes the Dragon Ball Super
 // Fusion World "Sealed Products" category (renders fine headless). Each product
 // card: a[href*="/product/"] (id), innerText "Set | rarity | Name | N listings
-// from | $lowestPrice". We keep boxes/cases (drop single/tournament packs) and
-// record the lowest available ("from") price. Per-product Market Price is
+// from | $lowestPrice". We keep boxes/cases/booster packs (drop tournament/promo
+// packs, which aren't real retail product) and record the lowest available
+// ("from") price. Per-product Market Price is
 // captured separately by market-tcgplayer.js -> market_values(source='tcgplayer').
 import { chromium } from 'playwright'
 import { detectSetName, detectProductType, parsePrice } from '../lib/detect.js'
@@ -14,8 +15,10 @@ const URLS = [`${BASE}&page=1`, `${BASE}&page=2`, `${BASE}&page=3`]
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
 
-// Keep sealed boxes/cases/bundles; drop single packs + tournament/promo packs.
-const KEEP_TYPES = new Set(['booster_box', 'case', 'bundle'])
+// Keep sealed boxes/cases/bundles/booster packs; drop tournament/promo packs
+// (detectProductType classifies those as 'other', not 'booster_pack', since
+// their titles don't say "booster pack").
+const KEEP_TYPES = new Set(['booster_box', 'booster_pack', 'case', 'bundle'])
 
 export async function scrapeTcgplayer({ headless = true } = {}) {
   const browser = await chromium.launch({
@@ -65,7 +68,7 @@ export async function scrapeTcgplayer({ headless = true } = {}) {
             it.lines[2] ||
             it.lines[0]
           const productType = detectProductType(name)
-          if (!KEEP_TYPES.has(productType)) continue // drop single/tournament packs
+          if (!KEEP_TYPES.has(productType)) continue // drop tournament/promo packs
           // Unlike other sources, TCGplayer's card text never mentions "Dragon
           // Ball" at all (just the set name, e.g. "Cross Force") — there's no
           // franchise text here to sanity-check against. Trust the URL's

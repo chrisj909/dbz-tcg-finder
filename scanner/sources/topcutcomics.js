@@ -11,7 +11,7 @@ const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
 
 // Keep sealed boxes/cases/bundles; drop singles, graphic novels, figures, etc.
-const KEEP_TYPES = new Set(['booster_box', 'case', 'bundle'])
+const KEEP_TYPES = new Set(['booster_box', 'booster_pack', 'case', 'bundle'])
 
 export async function scrapeTopCutComics({ headless = true } = {}) {
   const browser = await chromium.launch({
