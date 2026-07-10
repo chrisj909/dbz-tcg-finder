@@ -60,7 +60,10 @@ export default function DashboardClient({
   const [types, setTypes] = useState<Set<string>>(new Set())
   const [dealsOnly, setDealsOnly] = useState(false)
   const [watchlistOnly, setWatchlistOnly] = useState(false)
-  const [inStockOnly, setInStockOnly] = useState(false)
+  // Default to hiding sold-out/out-of-stock items — a "deal" that's out of
+  // stock isn't actionable. Users can still toggle the "Active listings in
+  // stock" stat card off to see everything, including sold-out listings.
+  const [inStockOnly, setInStockOnly] = useState(true)
   const [newOnly, setNewOnly] = useState(false)
   const [sort, setSort] = useState('new')
   const [watchlistIds, setWatchlistIds] = useState<Set<string>>(new Set(initialWatchlistIds))
@@ -172,7 +175,7 @@ export default function DashboardClient({
     types.size > 0 ||
     dealsOnly ||
     watchlistOnly ||
-    inStockOnly ||
+    !inStockOnly ||
     newOnly ||
     sort !== 'new'
   const reset = () => {
@@ -181,7 +184,7 @@ export default function DashboardClient({
     setTypes(new Set())
     setDealsOnly(false)
     setWatchlistOnly(false)
-    setInStockOnly(false)
+    setInStockOnly(true)
     setNewOnly(false)
     setSort('new')
   }
