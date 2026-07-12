@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const listings = await sql`
       SELECT
         id, source, external_id, title, url, price, currency, condition,
-        in_stock, quantity_available, image_url,
+        in_stock, quantity_available, image_url, image_urls,
         (image_data IS NOT NULL) AS has_stored_image,
         seller, set_name, product_type, category, era,
         market_value, deal_score, deal_reason, city, distance_mi, is_preorder,

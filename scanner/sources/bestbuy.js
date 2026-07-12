@@ -13,7 +13,13 @@ const QUERIES = [
   '(search=Dragon Ball Z&search=trading card)',
 ]
 
-const SHOW_FIELDS = 'sku,name,salePrice,image,url,onlineAvailability,inStoreAvailability'
+// Best Buy's API returns several distinct image fields (not an array) in the
+// same response — angleImage/backViewImage/etc are free extras beyond the
+// primary `image`, unlike every scraped source here whose search-result grid
+// only ever exposes one thumbnail per item (see #68 — getting more from those
+// requires a per-item detail-page visit, deliberately not done here).
+const EXTRA_IMAGE_FIELDS = ['angleImage', 'alternateViewsImage', 'backViewImage', 'leftViewImage', 'rightViewImage', 'topViewImage']
+const SHOW_FIELDS = `sku,name,salePrice,image,${EXTRA_IMAGE_FIELDS.join(',')},url,onlineAvailability,inStoreAvailability`
 
 // Keep sealed boxes/cases/bundles; drop singles, figures, and other non-TCG
 // "Dragon Ball" merch the keyword search inevitably pulls in.
@@ -49,6 +55,8 @@ export async function scrapeBestBuy() {
         if (!KEEP_TYPES.has(productType)) continue
         seen.add(String(prod.sku))
 
+        const extraImages = EXTRA_IMAGE_FIELDS.map((f) => prod[f]).filter(Boolean)
+
         listings.push({
           source: 'bestbuy',
           external_id: String(prod.sku),
@@ -58,6 +66,7 @@ export async function scrapeBestBuy() {
           currency: 'USD',
           in_stock: Boolean(prod.onlineAvailability || prod.inStoreAvailability),
           image_url: prod.image,
+          image_urls: extraImages.length ? extraImages : undefined,
           seller: 'Best Buy',
           set_name: detectSetName(title),
           product_type: productType,
