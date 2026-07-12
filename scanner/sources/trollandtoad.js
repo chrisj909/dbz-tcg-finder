@@ -60,6 +60,11 @@ export async function scrapeTrollAndToad({ headless = true } = {}) {
 
       const variants = Array.isArray(prod.variants) ? prod.variants : []
       const priceStr = variants[0]?.price
+      // Shopify's products.json already returns the full photo set per
+      // product (prod.images[]) in this same response — no extra request
+      // needed, unlike every Playwright-scraped source's search-grid, which
+      // only ever exposes one thumbnail (see #68).
+      const images = Array.isArray(prod.images) ? prod.images.map((i) => i.src).filter(Boolean) : []
       listings.push({
         source: 'trollandtoad',
         external_id: String(prod.id),
@@ -68,7 +73,8 @@ export async function scrapeTrollAndToad({ headless = true } = {}) {
         price: priceStr != null ? Number(priceStr) : null,
         currency: 'USD',
         in_stock: variants.some((v) => v.available),
-        image_url: prod.images?.[0]?.src,
+        image_url: images[0],
+        image_urls: images.length > 1 ? images.slice(1) : undefined,
         seller: 'Troll & Toad',
         set_name: detectSetName(title),
         product_type: productType,
