@@ -12,6 +12,9 @@ export type Source =
   | 'walmart'
   | 'gamestop'
   | 'topcutcomics'
+  | 'miniaturemarket'
+  | 'daveandadams'
+  | '401games'
 export type Category = 'tcg_sealed' | 'merch'
 export type Era = 'score' | 'panini' | 'bandai_super'
 

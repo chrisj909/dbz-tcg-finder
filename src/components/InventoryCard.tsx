@@ -12,6 +12,9 @@ const SOURCE_STYLES: Record<string, string> = {
   walmart: 'bg-blue-900 text-blue-100',
   gamestop: 'bg-red-800 text-red-100',
   topcutcomics: 'bg-rose-700 text-rose-100',
+  miniaturemarket: 'bg-amber-700 text-amber-100',
+  daveandadams: 'bg-cyan-700 text-cyan-100',
+  '401games': 'bg-orange-800 text-orange-100',
 }
 
 const PRODUCT_TYPE_LABELS: Record<string, string> = {
@@ -181,11 +184,14 @@ export default function InventoryCard({
         <div className="flex items-center justify-between mt-auto pt-1">
           <div className="flex flex-col">
             <span className="text-lg font-bold text-green-400">
-              {price != null ? `$${price.toFixed(2)}` : 'N/A'}
+              {price != null
+                ? `$${price.toFixed(2)}${listing.currency !== 'USD' ? ` ${listing.currency}` : ''}`
+                : 'N/A'}
             </span>
             {hasPriceDrop && previousPrice != null && (
               <span className="text-xs text-gray-500 line-through">
                 ${previousPrice.toFixed(2)}
+                {listing.currency !== 'USD' ? ` ${listing.currency}` : ''}
               </span>
             )}
             {marketValue != null && (
