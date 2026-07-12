@@ -34,6 +34,17 @@ const UA =
 const INSTRUMENT_RE =
   /\bguitars?\b|\bamps?\b|amplifier|\bbass\b|\bpedals?\b|fender|squier|stratocaster|telecaster|humbucker|fretboard|\bfrets?\b|\bstrings?\b|ukulele|mandolin|\bpickups?\b/i
 
+// Auction houses cross-post generic "we buy/sell everything collectible"
+// spam across every Craigslist category — their boilerplate body text can
+// match a Dragon Ball query even though the actual post has nothing to do
+// with it (found live: "Ending Gold Silver Coins Jewelry Signed Sports Mem
+// Fine Art NCauctions.com"). Require 2+ distinct unrelated-collectible
+// category mentions in the TITLE before dropping — a real listing that
+// happens to mention "coins" once (e.g. "box lot, some rare coins included")
+// won't trigger this, only the multi-category auction-teaser pattern will.
+const AUCTION_SPAM_RE =
+  /\b(coins?|jewelry|sports\s*mem|fine\s*art|estate\s*sale|auction\s*house)\b.*\b(coins?|jewelry|sports\s*mem|fine\s*art|estate\s*sale|auction\s*house)\b/i
+
 export async function scrapeCraigslist({ headless = true } = {}) {
   const browser = await chromium.launch({ headless })
   const listings = []
@@ -77,6 +88,7 @@ export async function scrapeCraigslist({ headless = true } = {}) {
           if (!it.pid || seen.has(it.pid)) continue
           const title = it.title || 'Craigslist listing'
           if (INSTRUMENT_RE.test(title)) continue // #20: drop DBZ-guitar/instrument false positives
+          if (AUCTION_SPAM_RE.test(title)) continue // drop generic cross-posted auction-house spam
           seen.add(it.pid)
           const { location } = parseCraigslistMeta(it.meta)
           const distanceMi = distanceFromBirmingham(location)
