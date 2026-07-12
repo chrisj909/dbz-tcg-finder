@@ -32,11 +32,14 @@ export async function scoreDeals(sql) {
   await sql`UPDATE listings SET deal_score = NULL, market_value = NULL, deal_reason = NULL WHERE is_active = true AND deal_score IS NOT NULL`
 
   // Only score box/case listings — the market_values benchmarks are per-box, so
-  // comparing a single/pack to a box median would be meaningless.
+  // comparing a single/pack to a box median would be meaningless. Also only
+  // USD listings — market_values are USD (eBay-sold or TCGplayer), and a
+  // non-USD price (e.g. 401 Games' CAD) compared directly would produce a
+  // wildly wrong "deal" percentage without real currency conversion.
   const listings = await sql`
     SELECT id, title, price FROM listings
     WHERE is_active = true AND in_stock = true AND price IS NOT NULL
-      AND product_type IN ('booster_box', 'case')
+      AND product_type IN ('booster_box', 'case') AND currency = 'USD'
   `
 
   let scored = 0

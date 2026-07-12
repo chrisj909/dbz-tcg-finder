@@ -31,6 +31,9 @@ const SOURCE_LABELS: Record<string, string> = {
   walmart: 'Walmart',
   gamestop: 'GameStop',
   topcutcomics: 'Top Cut Comics',
+  miniaturemarket: 'Miniature Market',
+  daveandadams: "Dave & Adam's",
+  '401games': '401 Games',
 }
 const SOURCE_OPTS = Object.keys(SOURCE_LABELS).sort()
 const TYPE_LABELS: Record<string, string> = {

@@ -2,16 +2,19 @@
 // FB/OfferUp will need a saved session). Add OfferUp/Facebook here as built.
 import { scrapeBestBuy } from './bestbuy.js'
 import { scrapeCraigslist } from './craigslist.js'
+import { scrapeDaveAndAdams } from './daveandadams.js'
 import { scrapeEbay } from './ebay.js'
 import { scrapeFacebook } from './facebook.js'
 import { scrapeGamestop } from './gamestop.js'
 import { scrapeLocalShops } from './local-shops.js'
 import { scrapeMercari } from './mercari.js'
+import { scrapeMiniatureMarket } from './miniaturemarket.js'
 import { scrapeOfferUp } from './offerup.js'
 import { scrapeTcgplayer } from './tcgplayer.js'
 import { scrapeTopCutComics } from './topcutcomics.js'
 import { scrapeTrollAndToad } from './trollandtoad.js'
 import { scrapeWalmart } from './walmart.js'
+import { scrape401Games } from './401games.js'
 
 export const sources = {
   // eBay first — the core sealed-product source (national inventory).
@@ -86,5 +89,23 @@ export const sources = {
     browser: true,
     needsLogin: false,
     run: scrapeTopCutComics,
+  },
+  miniaturemarket: {
+    label: 'Miniature Market (national specialty shop)',
+    browser: true,
+    needsLogin: false,
+    run: scrapeMiniatureMarket,
+  },
+  daveandadams: {
+    label: "Dave & Adam's Card World (national specialty shop)",
+    browser: true,
+    needsLogin: false,
+    run: scrapeDaveAndAdams,
+  },
+  '401games': {
+    label: '401 Games (Canadian, ships to US — Shopify)',
+    browser: true,
+    needsLogin: false,
+    run: scrape401Games,
   },
 }
