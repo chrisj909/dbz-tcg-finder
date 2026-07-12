@@ -276,14 +276,14 @@ export default function DashboardClient({
               ★ Watchlist
             </button>
           )}
-          {sourceOpts.map((src) => (
-            <button key={src} onClick={() => setSources((s) => toggle(s, src))} className={chip(sources.has(src), 'orange')}>
-              {SOURCE_LABELS[src] ?? src}
-            </button>
-          ))}
           {typeOpts.map((pt) => (
             <button key={pt} onClick={() => setTypes((s) => toggle(s, pt))} className={chip(types.has(pt), 'blue')}>
               {TYPE_LABELS[pt] ?? pt}
+            </button>
+          ))}
+          {sourceOpts.map((src) => (
+            <button key={src} onClick={() => setSources((s) => toggle(s, src))} className={chip(sources.has(src), 'orange')}>
+              {SOURCE_LABELS[src] ?? src}
             </button>
           ))}
           {hasFilters && (
