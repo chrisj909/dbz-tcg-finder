@@ -29,6 +29,7 @@ export interface Listing {
   quantity_available?: number
   url: string
   image_url?: string
+  image_urls?: string[]
   has_stored_image?: boolean
   seller?: string
   first_seen_at: string

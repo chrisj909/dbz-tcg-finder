@@ -46,6 +46,19 @@ export default function InventoryCard({
   const marketValue = listing.market_value != null ? Number(listing.market_value) : null
   const isDeal = dealScore != null && dealScore >= 10
 
+  // Primary image first, then any extras a source captured (currently just
+  // Best Buy — see #68; most sources only ever have the one). image_data
+  // (stored blob) takes priority over image_url as the primary when present.
+  const primaryImage = listing.has_stored_image ? `/api/images/${listing.id}` : listing.image_url
+  const images = [primaryImage, ...(listing.image_urls ?? [])].filter((src): src is string => Boolean(src))
+  const [imgIndex, setImgIndex] = useState(0)
+  const showImage = images[imgIndex] ?? images[0]
+  const cycle = (e: React.MouseEvent, dir: 1 | -1) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setImgIndex((i) => (i + dir + images.length) % images.length)
+  }
+
   return (
     <div
       className={`group relative flex flex-col bg-gray-900 border rounded-xl overflow-hidden transition-colors ${
@@ -69,23 +82,51 @@ export default function InventoryCard({
           {isWatchlisted ? '★' : '☆'}
         </button>
       )}
-      <a href={listing.url} target="_blank" rel="noopener noreferrer" className="flex flex-col flex-1">
-      {listing.image_url || listing.has_stored_image ? (
-        <div className="aspect-square bg-gray-800 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={listing.has_stored_image ? `/api/images/${listing.id}` : listing.image_url}
-            alt={listing.title}
-            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
-            loading="lazy"
-          />
-        </div>
-      ) : (
-        <div className="aspect-square bg-gray-800 flex items-center justify-center text-4xl">
-          🐉
-        </div>
-      )}
+      <div className="relative aspect-square bg-gray-800 overflow-hidden">
+        <a href={listing.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+          {showImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={showImage}
+              alt={listing.title}
+              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-4xl">🐉</div>
+          )}
+        </a>
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={(e) => cycle(e, -1)}
+              aria-label="Previous image"
+              className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={(e) => cycle(e, 1)}
+              aria-label="Next image"
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-black/60 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              ›
+            </button>
+            <div className="absolute bottom-1.5 inset-x-0 flex justify-center gap-1">
+              {images.map((_, i) => (
+                <span
+                  key={i}
+                  className={`w-1.5 h-1.5 rounded-full ${i === imgIndex ? 'bg-white' : 'bg-white/40'}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
 
+      <a href={listing.url} target="_blank" rel="noopener noreferrer" className="flex flex-col flex-1">
       <div className="flex flex-col flex-1 p-3 gap-2">
         {/* Badges row */}
         <div className="flex items-center gap-1.5 flex-wrap">
