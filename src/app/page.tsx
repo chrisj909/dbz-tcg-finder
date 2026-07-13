@@ -3,6 +3,8 @@ import { Listing } from '@/lib/types'
 import StatsBar from '@/components/StatsBar'
 import DashboardClient from '@/components/DashboardClient'
 import SignOutButton from '@/components/SignOutButton'
+import NotificationBanner from '@/components/NotificationBanner'
+import EmailPrefToggle from '@/components/EmailPrefToggle'
 import { auth } from '@/lib/auth/server'
 
 // Always reflect the latest scan — a live finder shouldn't serve 5-min-stale data.
@@ -69,10 +71,14 @@ export default async function HomePage() {
   return (
     <div>
       {session?.user && (
-        <div className="flex items-center justify-end gap-3 text-sm text-gray-400 mb-4">
-          <span>{session.user.email}</span>
-          <SignOutButton />
-        </div>
+        <>
+          <div className="flex items-center justify-end gap-3 text-sm text-gray-400 mb-4">
+            <EmailPrefToggle />
+            <span>{session.user.email}</span>
+            <SignOutButton />
+          </div>
+          <NotificationBanner />
+        </>
       )}
       {listings.length === 0 ? (
         <>

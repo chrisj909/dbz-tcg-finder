@@ -8,6 +8,7 @@
 import { getSql, startScanRun, finishScanRun, upsertListing, deactivateStaleListings } from './lib/db.js'
 import { sources } from './sources/index.js'
 import { scoreDeals } from './deal-score.js'
+import { sendNotificationDigests } from './notify.js'
 import { checkSessions, printSessionWarnings } from './lib/session-health.js'
 
 const sourceArg = process.argv.find((a) => a.startsWith('--source='))
@@ -79,6 +80,18 @@ try {
   await scoreDeals(sql)
 } catch (err) {
   console.error('[deal-score] failed:', err.message)
+}
+
+// Email digest — only on a full scan (no --source filter), never on a
+// manual single-source debugging run, so testing/fixing one source doesn't
+// spam real users with notification emails.
+if (!only) {
+  try {
+    const sent = await sendNotificationDigests(sql)
+    if (sent) console.log(`[notify] sent ${sent} digest(s)`)
+  } catch (err) {
+    console.error('[notify] digest failed:', err.message)
+  }
 }
 
 console.log(
