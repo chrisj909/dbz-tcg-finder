@@ -78,6 +78,7 @@ approving once is usually trusted for a while.
 | `CRON_SECRET` | for cron | `.env.local` (+ Vercel) | guards `/api/cron/scan` |
 | `ALERT_WEBHOOK_URL` | optional | `.env.local` | Slack/Discord alert webhook (#26) |
 | `NEXT_PUBLIC_STACK_*` / `STACK_SECRET_SERVER_KEY` | for login | `.env.local` (+ Vercel) | Neon Auth (Stack) — #15 |
+| `ZEPTOMAIL_SMTP_HOST` / `_PORT` / `_USER` / `_PASS`, `MAIL_FROM` | for notifications | `.env.local` (+ Vercel) | Zoho ZeptoMail SMTP — #26/#71 notification digest. `scanner/lib/email.js` skips cleanly if unset. Chosen over a generic provider since Chris already owns `progrowthtech.com` via Zoho; regular Zoho Mail (business inbox) is explicitly not meant for automated/app-triggered sending — Zoho's own docs point to ZeptoMail for that. |
 
 `NEXT_PUBLIC_*` is browser-safe; everything else is server-only. **No eBay or TCGPlayer keys** (those sources scrape).
 
