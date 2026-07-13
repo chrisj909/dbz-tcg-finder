@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth/server'
 // check, and the (no-op) cron endpoint — none of those expose listing data
 // or need a session.
 //
-// Also left out: api/watchlist and api/sign-out. Their route handlers
+// Also left out: api/watchlist, api/sign-out, and api/notifications. Their route handlers
 // already independently call auth.getSession()/auth.signOut() and return a
 // clean 401 when unauthenticated, so the proxy's protection is redundant
 // for them — and for non-GET requests it's actively broken. Confirmed via
@@ -22,6 +22,6 @@ export default auth.middleware({ loginUrl: '/auth/sign-in' })
 
 export const config = {
   matcher: [
-    '/((?!api/auth|api/health|api/cron|api/watchlist|api/sign-out|auth/sign-in|auth/sign-up|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth|api/health|api/cron|api/watchlist|api/sign-out|api/notifications|auth/sign-in|auth/sign-up|_next/static|_next/image|favicon.ico).*)',
   ],
 }
